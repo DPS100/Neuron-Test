@@ -1,64 +1,97 @@
 /*
 NEURON
-Each neuron will consist of one or more dendrites that recieve action potentials (doubles) from other neurons.
-It will be able to communicate with other assigned neurons through the manager.
+Each neuron will consist of one axon that sends an action potential to the dendrites of connected neurons
+and one or more dendrites that recieves action potentials from other neurons.
+It will be set up and connected to other neurons through the manager.
 */
 public class Neuron{
 
-    private boolean isManualInput;
-    private int numOfDendrites;
-    private double[] dendrites;
-    private boolean[] isExcitatory;
-    private boolean[] hasRecieved;
+    private Dendrite[] dendrites;
+    private Axon axon;
     
-    Neuron(int numOfDendrites) {
-        isManualInput = false;//manual input is false by defauly
-        this.numOfDendrites = numOfDendrites;
-        dendrites = new double[numOfDendrites];
-        isExcitatory = new boolean[numOfDendrites];
-        setAllDendrites(true);//this is temporary code just to set all dendrites to excitatory
-        hasRecieved = new boolean[numOfDendrites];
+    /**
+     * This is a interneuron, and needs sensory and motor neurons to function
+     * @param neuronsRecievengFromMe
+     * @param neuronsSendingToMe
+     */
+    Neuron(Neuron[] neuronsRecievengFromMe, int neuronsSendingToMe) {
+        createDendrites(neuronsSendingToMe);
+        axon = new Axon(connectAxon(neuronsRecievengFromMe, neuronsRecievengFromMe.length));
     }
 
-    Neuron(int numOfDendrites, boolean isManualInput) {
-        this.isManualInput = isManualInput;
-        this.numOfDendrites = numOfDendrites;
-        dendrites = new double[numOfDendrites];
-        isExcitatory = new boolean[numOfDendrites];
-        setAllDendrites(true);//this is temporary code just to set all dendrites to excitatory
-        hasRecieved = new boolean[numOfDendrites];
+    /**
+     * This is a motor neuron, and can be made with no recievers
+     * @param neuronsSendingToMe
+     */
+    Neuron(int neuronsSendingToMe) {
+        createDendrites(neuronsSendingToMe);
+        axon = new Axon();
+    }
+    
+    /**
+     * This is a sensory neuron, and can be made with no sending neurons
+     * @param dendrite
+     * @param neuronsRecievengFromMe
+     */
+    Neuron(Dendrite dendrite, Neuron[] neuronsRecievengFromMe) {
+        dendrites = new Dendrite[]{dendrite};
+        dendrite.setNeuron(this);
+        dendrites[0].setNeuron(this);
+        axon = new Axon(connectAxon(neuronsRecievengFromMe, neuronsRecievengFromMe.length));
     }
 
-    private void setAllDendrites(boolean assignment) {
-        for(int i = 0; i < numOfDendrites; i++) {
-            assignExcitatory(i, assignment);
+    /**
+     * This is a standalone neuron, and should only be used as the singular neuron in a circuit
+     * @param dendrite
+     */
+    Neuron(Dendrite dendrite) {
+        dendrites = new Dendrite[]{dendrite};
+        dendrites[0].setNeuron(this);
+        axon = new Axon();
+    }
+
+    private Dendrite[] connectAxon(Neuron[] neurons, int neuronsRecievengFromMe) {
+        Dendrite[] connectedDendrites = new Dendrite[neuronsRecievengFromMe];
+        for(int i = 0; i < connectedDendrites.length; i++) {//finds next unassinged dendrite
+            connectedDendrites[i] = neurons[i].getUnassignedDendrite();
+        }
+        return connectedDendrites;
+    }
+
+    private void createDendrites(int length) {
+        dendrites = new Dendrite[length];
+        for(int i = 0; i < length; i++) {
+            dendrites[i] = new Dendrite();
+            dendrites[i].setAssigned(false);
+            dendrites[i].setNeuron(this);
         }
     }
 
-    public void assignExcitatory(int dendriteIndex, boolean assignment) {
-        isExcitatory[dendriteIndex] = assignment;
+    public Dendrite getUnassignedDendrite() {
+        for(int i = 0; i < dendrites.length; i++) {
+            if(!dendrites[i].getAssigned()) {
+                dendrites[i].setAssigned(true);
+                return dendrites[i];
+            }
+        }
+        System.out.println("ERROR: No unassigned dendrites found");
+        return new Dendrite();
     }
 
     private boolean readyToFire() {
-        for(int i = 0; i < numOfDendrites; i++) {
-            if(!hasRecieved[i]) {return false;}//if any dendrites have not recieved an action potential, return false
+        for(int i = 0; i < dendrites.length; i++) {
+            if(!dendrites[i].getHasReceived()) {return false;}//if any dendrites have not recieved an action potential, return false
         }
         return true; //only runs when all dendrites have recieved action potential
     }
 
     private void resetDendrites() {//should be called after neuron has fired
-        for(int i = 0; i < numOfDendrites; i++) {
-            hasRecieved[i] = false;
+        for(int i = 0; i < dendrites.length; i++) {
+            dendrites[i].resetDendrite();
         }
     }
 
-    public void recieveActionPotential(double actionPotential, int dendriteIndex) {
-        dendrites[dendriteIndex] = actionPotential;
-        hasRecieved[dendriteIndex] = true;
-        update();
-    }
-
-    private void update() {
+    public void update() {
         if(readyToFire()) {
             fire(calculateActionPotential());
         }
@@ -66,25 +99,30 @@ public class Neuron{
 
     private double calculateActionPotential() {
         double sum = 0;
-        for(int i = 0; i < numOfDendrites; i++) {
-            if(isExcitatory[i]) {sum += dendrites[i];}
-            else {sum -= dendrites[i];}
+        for(int i = 0; i < dendrites.length; i++) {
+            if(dendrites[i].getIsExcitatory()) {sum += dendrites[i].getActionPotential();}
+            else {sum -= dendrites[i].getActionPotential();}
         }
         if(sum < 0) {sum = 0;}//neurons should only fire a positive value
-        return sum / numOfDendrites;
+        return sum / dendrites.length;
     }
 
     private void fire(double actionPotential) {
-        System.out.println(actionPotential);
-        System.out.println(this.toString());
+        //System.out.println(actionPotential);
+        //System.out.println(this.toString());
+        axon.sendActionPotential(actionPotential);
         resetDendrites();
     }
 
+    public void setAxon(Axon axon) {
+        this.axon = axon;
+    }
+
     public String toString() {
-        return "Number of Dendrites: " + numOfDendrites +
-        "\nDendrite values: " + dendrites.toString() +
-        "\nDendrite type: " + isExcitatory.toString() +
-        "\nDendrite recieved:" + hasRecieved.toString() +
+        return "Neuron:" +
+        "\nNumber of Dendrites: " + dendrites.length +
+        "\nDendrites:" + //TODO loop through all dendrites
+        "\nAxon:" + axon +
         "\nReady to fire? " + readyToFire();
     }
 }
