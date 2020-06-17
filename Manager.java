@@ -1,6 +1,7 @@
+import java.util.Scanner;
+
 public class Manager {
-    static Neuron sensory = new Neuron(1);
-    public static void main(String[] args) {
-        sensory.recieveActionPotential(1, 0);
-    }
+    Scanner scanner = new Scanner(System.in);
+    String input;
+    Neuron neuron = new Neuron(1, true);
 }
