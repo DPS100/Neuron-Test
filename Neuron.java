@@ -4,6 +4,7 @@ Each neuron will consist of one axon that sends an action potential to the dendr
 and one or more dendrites that recieves action potentials from other neurons.
 It will be set up and connected to other neurons through the manager.
 */
+
 public class Neuron{
 
     private Dendrite[] dendrites;
@@ -116,6 +117,10 @@ public class Neuron{
 
     public void setAxon(Axon axon) {
         this.axon = axon;
+    }
+
+    public Axon getAxon() {
+        return axon;
     }
 
     public String toString() {
