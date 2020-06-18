@@ -1,32 +1,40 @@
 /*
-Each dendrite will be created by a neuron
+Each dendrite will be created by the manager to connect neurons
 A seperate neuron will assign a axon to apply any action potential
 */
 public class Dendrite {
 
     private boolean isExcitatory;
     private boolean hasRecieved;
-    private boolean isAssigned;
     private double actionPotential;
     private Neuron neuron;
+    private double resistance;
+    private String name;
 
-    Dendrite() {
-        setExcitatory(true);
-        setAssigned(false);
+    Dendrite(Neuron neuron, String name) {
+        setNeuron(neuron);
+        this.name = neuron.getName() + "Dendrite #" + name;
+        isExcitatory = true;
+        resistance = 0;
     }
 
     public void setActionPotential(double actionPotential) {
-        this.actionPotential = actionPotential;
+        this.actionPotential = actionPotential - resistance;
+        System.out.println("Excitatory value is: " + isExcitatory);
+        if(!isExcitatory) {
+            this.actionPotential *= -1;
+            System.out.println("Making potential negative");
+        } else {
+            System.out.println("This dendrite is excitatory");
+        }
+        System.out.println("Action potential is now " + this.actionPotential);
         hasRecieved = true;
         neuron.update();
     }
 
     public void setExcitatory(boolean isExcitatory) {
+        System.out.println("Setting excitatory to " + isExcitatory);
         this.isExcitatory = isExcitatory;
-    }
-
-    public void setAssigned(boolean isAssigned) {
-        this.isAssigned = isAssigned;
     }
 
     public void setHasRecieved(boolean hasRecieved) {
@@ -37,12 +45,12 @@ public class Dendrite {
         this.neuron = neuron;
     }
 
-    public Neuron getNeuron() {
-        return neuron;
+    public void setResistance(double resistance) {
+        this.resistance = resistance;
     }
 
-    public boolean getAssigned() {
-        return isAssigned;
+    public Neuron getNeuron() {
+        return neuron;
     }
 
     public double getActionPotential() {
@@ -61,9 +69,12 @@ public class Dendrite {
         hasRecieved = false;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public String toString() {
         return "Dendrite: " +
-        "\nIs assigned: " + isAssigned +
         "\nIs excitatory: " + isExcitatory +
         "\nHas recieved: " + hasRecieved +
         "\nAction potential: " + actionPotential;

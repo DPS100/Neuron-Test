@@ -1,33 +1,35 @@
 /*
-Each axon will be given 1+ dendrites at construction
+Each axon will be given 1+ dendrites
 When a neuron fires, the axon will send the signal to all connected dendrites and update their neurons
 */
+
+import java.util.ArrayList;
+
 public class Axon {
     
-    private Dendrite[] dendrites;
-    private boolean isMotorAxon;
-
-    Axon(Dendrite[] dendrites) {
-        this.dendrites = dendrites;
-        isMotorAxon = false;
-    }
+    private ArrayList<Dendrite> dendrites;
 
     Axon() {
-        isMotorAxon = true;
+        dendrites = new ArrayList<Dendrite>();
     }
 
     public void sendActionPotential(double actionPotential) {
-        if(!isMotorAxon) {
-            for(int i = 0; i < dendrites.length; i++) {
-                dendrites[i].setActionPotential(actionPotential);
+        System.out.println("Sending " + actionPotential + " to " + dendrites.size() + " dendrites");
+        if(dendrites.size() > 0) {//if no dendrites are present, this is a motor neuron
+            for(int i = 0; i < dendrites.size(); i++) {
+                System.out.println("Sending to " + dendrites.get(i).getName());
+                dendrites.get(i).setActionPotential(actionPotential);
             }
         } else {
-            System.out.println("Motor Axon output:" + actionPotential);
+            System.out.println("Motor Axon output: " + actionPotential);
         }
-        
+    }
+
+    public void addDendrite(Dendrite dendrite) {
+        dendrites.add(dendrite);
     }
 
     public String toString() {
-        return "Axon: \nConnected dendrites: " + dendrites.length;
+        return "Axon: \nConnected dendrites: " + dendrites.size();
     }
 }
