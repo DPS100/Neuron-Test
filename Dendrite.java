@@ -13,27 +13,19 @@ public class Dendrite {
 
     Dendrite(Neuron neuron, String name) {
         setNeuron(neuron);
-        this.name = neuron.getName() + "Dendrite #" + name;
+        this.name = neuron.getName() + " Dendrite #" + name;
         isExcitatory = true;
         resistance = 0;
     }
 
     public void setActionPotential(double actionPotential) {
         this.actionPotential = actionPotential - resistance;
-        System.out.println("Excitatory value is: " + isExcitatory);
-        if(!isExcitatory) {
-            this.actionPotential *= -1;
-            System.out.println("Making potential negative");
-        } else {
-            System.out.println("This dendrite is excitatory");
-        }
-        System.out.println("Action potential is now " + this.actionPotential);
+        if(!isExcitatory) {this.actionPotential *= -1;}
         hasRecieved = true;
         neuron.update();
     }
 
     public void setExcitatory(boolean isExcitatory) {
-        System.out.println("Setting excitatory to " + isExcitatory);
         this.isExcitatory = isExcitatory;
     }
 

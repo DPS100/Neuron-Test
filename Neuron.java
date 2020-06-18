@@ -53,19 +53,19 @@ public class Neuron{
     private double calculateActionPotential() {
         double sum = 0;
         for(int i = 0; i < dendrites.size(); i++) {
-            System.out.println("Adding " + dendrites.get(i).getActionPotential());
+            //System.out.println("Adding " + dendrites.get(i).getActionPotential());
             sum += dendrites.get(i).getActionPotential();
-            System.out.println("Got " + sum);
+            //System.out.println("Got " + sum);
         }
         sum /= dendrites.size();
         if(sum < 0) {sum = 0;}//neurons should only fire a positive value
         if(sum > 1) {sum = 1;}
-        System.out.println("Total: " + sum);
+        //System.out.println("Total: " + sum);
         return sum;
     }
 
     private void fire(double actionPotential) {
-        axon.sendActionPotential(actionPotential);
+        axon.sendActionPotential(actionPotential, name);
         resetDendrites();
     }
 
