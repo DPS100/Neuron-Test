@@ -10,7 +10,5 @@ public class Manager {
 
     private static void connectNeurons() {
         input = neuron1.createDendrite(true);
-        neuron1.connectAxon(neuron2, true);
-        neuron2.connectAxon(neuron2, true);
     }
 }
