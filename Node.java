@@ -2,59 +2,87 @@ public class Node {
 
     private final Node[] outputs;
     private final double[] outputStrengthFactor;
-    private final Node[] inputs;
-    private double[] inputStrengthFactor;
+    private final int inputs;
+    private double inputSum;
+    private boolean[] inputHasFired;
     private final double threshold;
-    private boolean fired;
     private int state;
 
-    public Node(Node[] outputs, double[] outputStrengthFactor, Node[] inputs, double threshold) {
+    /**
+     * This constructor makes a node with 1 or more target connecting input and output nodes
+     * @param outputs Array of nodes this node will send signals to
+     * @param outputStrengthFactor The array of factors (between 0 - 1) that each signal will be multiplied by
+     * @param inputs Number of nodes that will be sending signals to this node
+     * @param threshold The sum of the inputs that will be needed to exceeded to fire 
+     */
+    Node(Node[] outputs, double[] outputStrengthFactor, int inputs, double threshold) {
         this.outputs = outputs;
         this.outputStrengthFactor = outputStrengthFactor;
         this.inputs = inputs;
-        this.inputStrengthFactor = new double[inputs.length];
+        inputSum = 0;
+        setUnfired(inputHasFired);
         this.threshold = threshold;
-        this.fired = false;
+        state = -1;
     }
 
+    /**
+     * Method to set an entire array's contents to unfired.
+     * Should only be called in the constructor on <inputHasFired>
+     * @param targetArray Array whose contents should be set to unfired
+     */
+    private void setUnfired(boolean[] targetArray) {
+        for(int i = 0; i < targetArray.length; i++) {
+            targetArray[i] = false;
+        }
+    }
+
+    /**
+     * Method to process whether the inputs overcome the threshold.
+     * Should only be called once all input nodes have fired
+     */
     private void process() {
-        double acc = 0;
-        for (int i = 0; i < inputs.length; i++) {
-            acc += inputStrengthFactor[i];
-        }
-
-        if(acc >= threshold) {
-            this.state = 1;
+        if(inputSum >= threshold) { // Check if each input is enough to overcome threshold
+            this.state = 1; // Over threshold, set state to active
         } else {
-            this.state = 0;
+            this.state = 0; // Under threshold, set state to inactive
         }
     }
 
+    /**
+     * Method to send signal to each recieving node.
+     * Should only be called once all input nodes have fired
+     */
     private void sendSignals() {
-        process();
-        for(int i = 0; i < outputs.length; i++) {
-            outputs[i].recieveSignal(state * outputStrengthFactor[i]);
-        }
-        this.setFired();
-    }
-
-    public void recieveSignal(double strength) {
-        for(int i = 0; i < inputs.length; i++) {
-            if(!inputs[i].isFired()) {
-                inputStrengthFactor[i] = strength;
-            }
-
-            if(i == inputs.length - 1) {
-                sendSignals();
-            }
+        for(int i = 0; i < outputs.length; i++) { // Send each connected node a signal
+            outputs[i].recieveSignal(state * outputStrengthFactor[i]); // Signal is this node's activity multiplied by the output strengh factor
         }
     }
 
-    public boolean isFired() {
-        return fired;
+    /**
+     * Method to tell a node to recieve a specified signal
+     */
+    public void recieveSignal(double signalStrength) {
+        inputSum += signalStrength;
+
+        boolean acc = true;
+        int i = 0;
+        while(acc && i < inputs) { // Check to see if all inputs have fired
+            if(inputHasFired[i] = false) {
+                acc = false;
+            }
+            i++;
+        }
+        
+        if(acc) { // If all inputs are completed
+            process();
+            sendSignals();
+        }
     }
 
-    public void setFired() {
-        fired = true;
+    /**
+     * @return -1 for unprocessed, 0 for inactive, 1 for active
+     */
+    public int getState() {
+        return state;
     }
 }
