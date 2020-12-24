@@ -1,7 +1,7 @@
 public class Node {
 
     private final Node[] outputs;
-    private final double[] outputStrengthFactor;
+    private final double[] outputStrengthFactors;
     private final int inputs;
     private double inputSum;
     private boolean[] inputHasFired;
@@ -17,9 +17,10 @@ public class Node {
      */
     Node(Node[] outputs, double[] outputStrengthFactor, int inputs, double threshold) {
         this.outputs = outputs;
-        this.outputStrengthFactor = outputStrengthFactor;
+        this.outputStrengthFactors = outputStrengthFactor;
         this.inputs = inputs;
         inputSum = 0;
+        inputHasFired = new boolean[inputs];
         setUnfired(inputHasFired);
         this.threshold = threshold;
         state = -1;
@@ -53,8 +54,10 @@ public class Node {
      * Should only be called once all input nodes have fired
      */
     private void sendSignals() {
-        for(int i = 0; i < outputs.length; i++) { // Send each connected node a signal
-            outputs[i].recieveSignal(state * outputStrengthFactor[i]); // Signal is this node's activity multiplied by the output strengh factor
+        if(outputs.length > 0) { // Only works if there is > 1 output node
+            for(int i = 0; i < outputs.length; i++) { // Send each connected node a signal
+                outputs[i].recieveSignal(state * outputStrengthFactors[i]); // Signal is this node's activity multiplied by the output strengh factor
+            }
         }
     }
 
@@ -62,12 +65,21 @@ public class Node {
      * Method to tell a node to recieve a specified signal
      */
     public void recieveSignal(double signalStrength) {
-        inputSum += signalStrength;
+        boolean end = false;
+        int i = 0;
+        while(!end && i < inputs) { // Find next open spot in input fired array, and change it to true
+            if(inputHasFired[i] == false) {
+                inputHasFired[i] = true;
+                inputSum += signalStrength; // Update signal strength
+                end = true;
+            }
+            i++;
+        }
 
         boolean acc = true;
-        int i = 0;
+        i = 0;
         while(acc && i < inputs) { // Check to see if all inputs have fired
-            if(inputHasFired[i] = false) {
+            if(inputHasFired[i] == false) {
                 acc = false;
             }
             i++;
