@@ -8,7 +8,7 @@ public class Circuit {
     /**
      * A circuit consists of one "artificial" layer made up of inputs,
      * and specified layer sizes that make up normal layers (includes the output nodes).
-     * @param layerSize The size of each layer (Must greater than or equal to 2)
+     * @param layerSize The size of each layer (Must greater than or equal to 1)
      * @param inputs Number of inputs
      */
     Circuit(int[] layerSize, int inputs) {
