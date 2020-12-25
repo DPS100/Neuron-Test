@@ -3,26 +3,28 @@ public class Circuit {
     private Node[][] layers; // Includes the outputs
     private double[][] connectionStrength;
     private double[][] thresholds;
-    private double[] inputs;
+    private int inputs;
 
     /**
      * A circuit consists of one "artificial" layer made up of inputs,
      * and specified layer sizes that make up normal layers (includes the output nodes).
-     * @param layerSize The size of each layer
+     * @param layerSize The size of each layer (Must greater than or equal to 2)
      * @param inputs Number of inputs
      */
-    Circuit(int[] layerSize, double[] inputs) {
+    Circuit(int[] layerSize, int inputs) {
         this.inputs = inputs;
 
         layers = new Node[layerSize.length][];
+        thresholds = new double[layerSize.length][];
         for(int i = 0; i < layerSize.length; i++) {
             layers[i] = new Node[layerSize[i]];
+            thresholds[i] = new double[layerSize[i]];
         }
 
         connectionStrength = new double[layerSize.length][];
         for(int i = 0; i < connectionStrength.length; i++) {
             if (i == 0) { // Connection between input and first layer
-                connectionStrength[i] = new double[inputs.length * layers[i].length]; // Total connections = inputs * first layer nodes
+                connectionStrength[i] = new double[inputs * layers[i].length]; // Total connections = inputs * first layer nodes
             } else { // Connection between current layer and next layer
                 connectionStrength[i] = new double[layers[i - 1].length * layers[i].length]; // Total connections = current layer nodes * next layer nodes
             }
@@ -36,9 +38,16 @@ public class Circuit {
      * Should only be called by the constructor.
      */
     private void createNodes() {
-        for(int x = layers.length - 1; x > 0; x--) { // Place on x - axis. Works right to left to not overwrite previously adressed nodes
+        for(int x = layers.length - 1; x >= 0; x--) { // Place on x - axis. Works right to left to not overwrite previously adressed nodes
             for(int y = 0; y < layers[x].length; y++) { // Place on y - axis
-                int nextLayerSize = layers[x + 1].length;
+
+                int nextLayerSize;
+                if(x == layers.length - 1) { // Check if this is the output layer
+                    nextLayerSize = 0; // Output layer has no outputs
+                } else {
+                    nextLayerSize = layers[x + 1].length;
+                }
+
                 Node[] connectedNodes = new Node[nextLayerSize]; // Array for current (x,y) node connections
                 double[] connectedNodeStrengths = new double[nextLayerSize]; // Array for current (x,y) node connection strengths
                 for(int y2 = 0; y2 < nextLayerSize; y2++) { // Place on next y - axis interval (y2)
@@ -48,7 +57,7 @@ public class Circuit {
 
                 Node node;
                 if(x == 0) { // First node layer relies on "artificial" input layer
-                    node = new Node(connectedNodes, connectedNodeStrengths, inputs.length, thresholds[x][y]);
+                    node = new Node(connectedNodes, connectedNodeStrengths, inputs, thresholds[x][y]);
                 } else {
                     node = new Node(connectedNodes, connectedNodeStrengths, layers[x-1].length, thresholds[x][y]);
                 }
