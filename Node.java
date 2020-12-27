@@ -1,11 +1,11 @@
 public class Node {
 
     private final Node[] outputs;
-    private final double[] outputStrengthFactors;
+    private double[] outputStrengthFactors;
     private final int inputs;
     private double inputSum;
     private boolean[] inputHasFired;
-    private final double threshold;
+    private double threshold;
     private int state;
 
     /**
@@ -63,6 +63,7 @@ public class Node {
 
     /**
      * Method to tell a node to recieve a specified signal
+     * @param signalStrength Strength of the signal this node should recieve
      */
     public void recieveSignal(double signalStrength) {
         boolean end = false;
@@ -92,9 +93,50 @@ public class Node {
     }
 
     /**
-     * @return -1 for unprocessed, 0 for inactive, 1 for active
+     * @return Current state of this node.
+     * -1 for unprocessed, 0 for inactive, 1 for active
      */
     public int getState() {
         return state;
+    }
+
+    /**
+     * @return The threshold this node must be greater than or equal to to be active
+     */
+    public double getThreshold() {
+        return threshold;
+    }
+
+    /**
+     * @param index Index of the output node
+     * @return Strength factor for specified output node
+     */
+    public double getOutputStrengthFactor(int index) {
+        return outputStrengthFactors[index];
+    }
+
+    /**
+     * @param threshold The threshold this node must be greater than or equal to to be active
+     */
+    public void setThreshold(double threshold) {
+        this.threshold = threshold;
+    }
+
+    /**
+     * @param index Index of the output node
+     * @param strengthFactor Strength factor for specified output node
+     */
+    public void setOutputStrengthFactor(int index, double strengthFactor) {
+        outputStrengthFactors[index] = strengthFactor;
+    }
+
+    /**
+     * Lets this node recieve new inputs
+     */
+    public void setCleared() {
+        for(int i = 0; i < inputHasFired.length; i++) {
+            inputHasFired[i] = false;
+            inputSum = 0;
+        }
     }
 }

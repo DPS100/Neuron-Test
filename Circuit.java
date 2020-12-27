@@ -11,23 +11,14 @@ public class Circuit {
      * @param layerSize The size of each layer (Must greater than or equal to 1)
      * @param inputs Number of inputs
      */
-    Circuit(int[] layerSize, int inputs) {
+    Circuit(int inputs, int[] layerSize, double[][] thresholds, double[][]connectionStrength) {
         this.inputs = inputs;
+        this.thresholds = thresholds;
+        this.connectionStrength = connectionStrength;
 
         layers = new Node[layerSize.length][];
-        thresholds = new double[layerSize.length][];
         for(int i = 0; i < layerSize.length; i++) {
             layers[i] = new Node[layerSize[i]];
-            thresholds[i] = new double[layerSize[i]];
-        }
-
-        connectionStrength = new double[layerSize.length][];
-        for(int i = 0; i < connectionStrength.length; i++) {
-            if (i == 0) { // Connection between input and first layer
-                connectionStrength[i] = new double[inputs * layers[i].length]; // Total connections = inputs * first layer nodes
-            } else { // Connection between current layer and next layer
-                connectionStrength[i] = new double[layers[i - 1].length * layers[i].length]; // Total connections = current layer nodes * next layer nodes
-            }
         }
 
         createNodes();
@@ -52,7 +43,7 @@ public class Circuit {
                 double[] connectedNodeStrengths = new double[nextLayerSize]; // Array for current (x,y) node connection strengths
                 for(int y2 = 0; y2 < nextLayerSize; y2++) { // Place on next y - axis interval (y2)
                     connectedNodes[y2] = layers[x + 1][y2]; // Place the (x+1, y2) node in node array
-                    connectedNodeStrengths[y2] = connectionStrength[x + 1][y2 + (y * y2)]; // Place the (x+1, y2 + (y * y2))) connection in connection array
+                    connectedNodeStrengths[y2] = connectionStrength[x + 1][y2 + (nextLayerSize * y)]; // Place the (x+1, y + (y2 * y))) connection in connection array
                 }
 
                 Node node;
@@ -73,9 +64,10 @@ public class Circuit {
      * @return Array of ints (1 = active, 0 = inactive)
      */
     public int[] process(double[] inputValues) {
+        clearCircuit();
         for(int y = 0; y < inputValues.length; y++) { // Place on "artificial" layer
             for(int y2 = 0; y2 < layers[0].length; y2++) { // Place on first node layer
-                layers[0][y].recieveSignal(inputValues[y] * connectionStrength[0][y2 + (y * y2)]); // Send the signal to each node in first layer
+                layers[0][y2].recieveSignal(inputValues[y] * connectionStrength[0][y2 + (layers[0].length * y)]); // Send the signal to each node in first layer
             }
         }
 
@@ -84,5 +76,34 @@ public class Circuit {
             outputs[i] = layers[layers.length - 1][i].getState(); // Fill array with the state of each output node
         }
         return outputs;
+    }
+
+    private void clearCircuit() {
+        for(int x = 0; x < layers.length; x++) {
+            for(int y = 0; y < layers[x].length; y++) {
+                layers[x][y].setCleared();
+            }
+        }
+    }
+
+    /**
+     * @return The 2D Node array that this circuit comprises of
+     */
+    public Node[][] getLayers() {
+        return layers;
+    }
+
+    /**
+     * @return Number of inputs this circuit has
+     */
+    public int getInputs() {
+        return inputs;
+    }
+
+    /**
+     * @return The 2D connection strength array that is assigned to nodes
+     */
+    public double[][] getConnectionStrengths() {
+        return connectionStrength;
     }
 }
