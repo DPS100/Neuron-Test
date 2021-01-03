@@ -1,4 +1,4 @@
-public class Circuit {
+public class Circuit{
 
     private Node[][] layers; // Includes the outputs
     private double[][] connectionStrength;
@@ -6,23 +6,89 @@ public class Circuit {
     private int inputs;
 
     /**
+     * This constructor needs manual values, and will not generate it's own.
      * A circuit consists of one "artificial" layer made up of inputs,
      * and specified layer sizes that make up normal layers (includes the output nodes).
-     * @param layerSize The size of each layer (Must greater than or equal to 1)
      * @param inputs Number of inputs
+     * @param layerSize The size of each layer (Must greater than or equal to 1)
      */
     Circuit(int inputs, int[] layerSize, double[][] thresholds, double[][]connectionStrength) {
-        this.inputs = inputs;
+        setupDefaultValues(inputs, layerSize);
+
         this.thresholds = thresholds;
         this.connectionStrength = connectionStrength;
 
-        layers = new Node[layerSize.length][];
-        for(int i = 0; i < layerSize.length; i++) {
-            layers[i] = new Node[layerSize[i]];
-        }
+        createNodes();
+    }
+
+    /**
+     * This constructor will generate it's own values
+     * A circuit consists of one "artificial" layer made up of inputs,
+     * and specified layer sizes that make up normal layers (includes the output nodes).
+     * @param inputs Number of inputs
+     * @param layerSize The size of each layer (Must greater than or equal to 1)
+     */
+    Circuit(int inputs, int[] layerSize) {
+        setupDefaultValues(inputs, layerSize);
+        generateValues(inputs, layerSize);
 
         createNodes();
-    }   
+    }
+
+    /**
+     * For use with any Circuit constructor to initialize inputs and layersize
+     * @param inputs Number of inputs
+     * @param layerSize The size of each layer (Must greater than or equal to 1)
+     */
+    private void setupDefaultValues(int inputs, int[] layerSize) {
+        this.inputs = inputs;
+
+        layers = new Node[layerSize.length][];
+        for(int i = 0; i < layerSize.length; i++) { // Set each layer to the correct size
+            layers[i] = new Node[layerSize[i]];
+        }
+    }
+
+    /**
+     * Make this circuit generate it's own 2D arrays for thresholds and connection strengths
+     * @param inputs Number of inputs
+     * @param layerSize The size of each layer (Must greater than or equal to 1)
+     */
+    private void generateValues(int inputs, int[] layerSize) {
+        generateThresholds(inputs, layerSize);
+        generateConnectionStrengths(inputs, layerSize);
+    }
+
+    private void generateThresholds(int inputs, int[] layerSize) {
+        double[][] thresholds = new double[layerSize.length][];
+        for(int x = 0; x < layerSize.length; x++) { // Threshold at position [x,y] will have a random value (double) between 0 and 1 (including 0)
+            thresholds[x] = new double[layerSize[x]];
+
+            for(int y = 0; y < thresholds[x].length; y++) {
+                thresholds[x][y] = Math.random();
+            }
+        }
+        this.thresholds = thresholds;
+    }
+
+    private void generateConnectionStrengths(int inputs, int[] layerSize) {
+        double[][] connectionStrength = new double[layerSize.length][];
+        for(int i = 0; i < connectionStrength.length; i++) {
+            if (i == 0) { // Connection between input and first layer
+                connectionStrength[i] = new double[inputs * layerSize[i]]; // Total connections = inputs * first layer nodes
+            } else { // Connection between current layer and next layer
+                connectionStrength[i] = new double[layerSize[i - 1] * layerSize[i]]; // Total connections = current layer nodes * next layer nodes
+            }
+        }
+
+        for(int x = 0; x < connectionStrength.length; x++) { // Connection Strength at position [x,y] will have a random value (double) between -1 and 1 (including -1)
+            for(int y = 0; y < connectionStrength[x].length; y++) {
+                connectionStrength[x][y] = Math.random() * 2 - 1;
+            }
+        }
+        this.connectionStrength = connectionStrength;
+    }
+
 
     /**
      * Creates each node in the circuit and connects them.
