@@ -1,4 +1,4 @@
-public class Node {
+public class Node{
 
     private final Node[] outputs;
     private double[] outputStrengthFactors;
@@ -134,9 +134,9 @@ public class Node {
      * Lets this node recieve new inputs
      */
     public void setCleared() {
+        inputSum = 0;
         for(int i = 0; i < inputHasFired.length; i++) {
             inputHasFired[i] = false;
-            inputSum = 0;
         }
     }
 }
