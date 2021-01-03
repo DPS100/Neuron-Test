@@ -1,3 +1,5 @@
+package src;
+
 public class Node{
 
     private final Node[] outputs;

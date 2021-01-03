@@ -1,3 +1,5 @@
+package src;
+
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 
@@ -62,6 +64,7 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
 
     public static void main(String[] args) {
         System.err.println(Runtime.getRuntime().availableProcessors());
+        System.err.println();
         new VisualManager(true);
     } 
 

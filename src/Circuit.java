@@ -1,3 +1,5 @@
+package src;
+
 public class Circuit{
 
     private Node[][] layers; // Includes the outputs
