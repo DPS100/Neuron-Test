@@ -1,3 +1,5 @@
+package src;
+
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 
@@ -8,7 +10,9 @@ import javax.swing.event.MouseInputListener;
 import java.awt.Dimension;
 import java.awt.Color;
 
-public class Manager extends JPanel implements MouseInputListener {
+import java.io.File;
+
+public class VisualManager extends JPanel implements MouseInputListener, Manager {
 
     private static final long serialVersionUID = 1L;
     private JFrame frame;
@@ -19,9 +23,31 @@ public class Manager extends JPanel implements MouseInputListener {
     private double[] circuitInputs;
     private Circuit circuit;
 
-    public Manager() {
+    /**
+     * @param guiEnabled Will this manager run with a graphical user interface?
+     */
+    public VisualManager(boolean guiEnabled) {
+        
         setupCircuit();
 
+        if(guiEnabled) {setupGUI();}
+    }
+
+    public void setupCircuit() {
+        boolean circuitSaved = true;
+        File file = new File("TestCircuit.json");
+        if(circuitSaved) {
+            this.circuit = readCircuitFromFile(file);
+        } else {
+            int[] layerSizes = {3,1};
+            circuit = new Circuit(circuitInputs.length, layerSizes);
+            writeCircuitToFile(file, circuit);
+        }
+        circuitInputs = new double[]{0,0};    
+        circuit.process(circuitInputs);
+    }
+
+    private void setupGUI() {
         frame = new JFrame("Neural Net Visualizer");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setUndecorated(false);
@@ -36,9 +62,11 @@ public class Manager extends JPanel implements MouseInputListener {
         repaint();
     }
 
-    public static void main(String[] args) {        
-        new Manager();
-    }
+    public static void main(String[] args) {
+        System.err.println(Runtime.getRuntime().availableProcessors());
+        System.err.println();
+        new VisualManager(true);
+    } 
 
     @Override
     public void paint(Graphics g) {
@@ -53,51 +81,6 @@ public class Manager extends JPanel implements MouseInputListener {
         }		
 
         drawCircuit(g);
-    }
-
-    private void setupCircuit() {
-        circuitInputs = new double[]{0,0};
-        int[] layerSizes = {3,1};
-        double[][] thresholds = setupThresholds(layerSizes, circuitInputs.length);
-        double[][] connectionStrength = setupConnectionStrength(layerSizes, circuitInputs.length);
-        circuit = new Circuit(circuitInputs.length, layerSizes, thresholds, connectionStrength);
-        circuit.process(circuitInputs);
-    }
-
-    private double[][] setupThresholds(int[] layerSizes, int circuitInputSize) {
-        double[][] thresholds = new double[layerSizes.length][];
-        for(int x = 0; x < layerSizes.length; x++) {
-            thresholds[x] = new double[layerSizes[x]];
-            int max;
-            if(x == 0) {
-                max = circuitInputSize;
-            } else {
-                max = thresholds[x - 1].length;
-            }
-
-            for(int y = 0; y < thresholds[x].length; y++) {
-                thresholds[x][y] = Math.random() * max;
-            }
-        }
-        return thresholds;
-    }
-
-    private double[][] setupConnectionStrength(int[] layerSizes, int circuitInputSize) {
-        double[][] connectionStrength = new double[layerSizes.length][];
-        for(int i = 0; i < connectionStrength.length; i++) {
-            if (i == 0) { // Connection between input and first layer
-                connectionStrength[i] = new double[circuitInputSize * layerSizes[i]]; // Total connections = inputs * first layer nodes
-            } else { // Connection between current layer and next layer
-                connectionStrength[i] = new double[layerSizes[i - 1] * layerSizes[i]]; // Total connections = current layer nodes * next layer nodes
-            }
-        }
-
-        for(int x = 0; x < connectionStrength.length; x++) {
-            for(int y = 0; y < connectionStrength[x].length; y++) {
-                connectionStrength[x][y] = Math.random();
-            }
-        }
-        return connectionStrength;
     }
 
     private void drawCircuit(Graphics g) {
