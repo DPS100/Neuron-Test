@@ -1,9 +1,9 @@
 public class Circuit {
 
-    private Node[][] layers; // Includes the outputs
-    private double[][] connectionStrength;
-    private double[][] thresholds;
-    private int inputs;
+    private Node[][] layers; // Node array that this curcuit consists of, includes the outputs but NOT inputs.
+    private double[][] connectionStrength; // Array of doubles that each output is multiplied by. Includes inputs to next but no outputs. Each array length is previous node layer size * next node layer size
+    private double[][] thresholds; // The net threshold each node must pass to become active.
+    private int inputs; // Number of input nodes (Not included in the layer 2d array).
 
     /**
      * A circuit consists of one "artificial" layer made up of inputs,
@@ -17,7 +17,7 @@ public class Circuit {
         this.connectionStrength = connectionStrength;
 
         layers = new Node[layerSize.length][];
-        for(int i = 0; i < layerSize.length; i++) {
+        for(int i = 0; i < layerSize.length; i++) { // Set each layer size
             layers[i] = new Node[layerSize[i]];
         }
 
@@ -42,8 +42,8 @@ public class Circuit {
                 Node[] connectedNodes = new Node[nextLayerSize]; // Array for current (x,y) node connections
                 double[] connectedNodeStrengths = new double[nextLayerSize]; // Array for current (x,y) node connection strengths
                 for(int y2 = 0; y2 < nextLayerSize; y2++) { // Place on next y - axis interval (y2)
-                    connectedNodes[y2] = layers[x + 1][y2]; // Place the (x+1, y2) node in node array
-                    connectedNodeStrengths[y2] = connectionStrength[x + 1][y2 + (nextLayerSize * y)]; // Place the (x+1, y + (y2 * y))) connection in connection array
+                    connectedNodes[y2] = layers[x + 1][y2]; // Place the next layer node in connected node array
+                    connectedNodeStrengths[y2] = connectionStrength[x + 1][y2 + (nextLayerSize * y)]; // Place the connection in connection array at position for this node -> next layer node
                 }
 
                 Node node;
@@ -78,6 +78,9 @@ public class Circuit {
         return outputs;
     }
 
+    /**
+     * Manually sets each node to unfired so the circuit can process again
+     */
     private void clearCircuit() {
         for(int x = 0; x < layers.length; x++) {
             for(int y = 0; y < layers[x].length; y++) {
