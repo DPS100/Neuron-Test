@@ -19,6 +19,7 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
     private int mouseX;
 	private int mouseY;
     private int radius;
+    private Task currentTask;
     
     private double[] circuitInputs;
     private Circuit circuit;
@@ -27,9 +28,7 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
      * @param guiEnabled Will this manager run with a graphical user interface?
      */
     public VisualManager(boolean guiEnabled) {
-        
         setupCircuit();
-
         if(guiEnabled) {setupGUI();}
     }
 
@@ -43,8 +42,8 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
             circuit = new Circuit(circuitInputs.length, layerSizes);
             writeCircuitToFile(file, circuit);
         }
-        circuitInputs = new double[]{0,0};    
-        circuit.process(circuitInputs);
+        circuitInputs = new double[]{0,0};
+        currentTask = startCircuitTask(circuit, circuitInputs, "task");
     }
 
     private void setupGUI() {
@@ -63,8 +62,6 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
     }
 
     public static void main(String[] args) {
-        System.err.println(Runtime.getRuntime().availableProcessors());
-        System.err.println();
         new VisualManager(true);
     } 
 
@@ -154,7 +151,7 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
         mouseX = e.getX();
         mouseY = e.getY();
         circuitInputs = new double[]{(double)mouseX / this.getWidth(), (double)mouseY / this.getHeight()};
-        circuit.process(circuitInputs);
+        startCircuitTask(circuit, circuitInputs, "thread");
         repaint();
     }
 
