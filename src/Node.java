@@ -109,6 +109,10 @@ public class Node{
         return threshold;
     }
 
+    public double getInputSum() {
+        return inputSum;
+    }
+
     /**
      * @param index Index of the output node
      * @return Strength factor for specified output node

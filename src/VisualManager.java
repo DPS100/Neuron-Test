@@ -34,7 +34,7 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
 
     public void setupCircuit() {
         boolean circuitSaved = true;
-        File file = new File("TestCircuit.json");
+        String file = "TestCircuit.json";
         if(circuitSaved) {
             this.circuit = readCircuitFromFile(file);
         } else {
@@ -151,7 +151,7 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
         mouseX = e.getX();
         mouseY = e.getY();
         circuitInputs = new double[]{(double)mouseX / this.getWidth(), (double)mouseY / this.getHeight()};
-        startCircuitTask(circuit, circuitInputs, "thread");
+        currentTask = startCircuitTask(circuit, circuitInputs, "thread");
         repaint();
     }
 
