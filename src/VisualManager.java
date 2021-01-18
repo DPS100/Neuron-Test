@@ -10,8 +10,6 @@ import javax.swing.event.MouseInputListener;
 import java.awt.Dimension;
 import java.awt.Color;
 
-import java.io.File;
-
 public class VisualManager extends JPanel implements MouseInputListener, Manager {
 
     private static final long serialVersionUID = 1L;
