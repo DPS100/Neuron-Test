@@ -70,20 +70,21 @@ public class Node{
     public void recieveSignal(double signalStrength) {
         boolean end = false;
         int i = 0;
-        while(!end && i < inputs) { // Find next open spot in input fired array, and change it to true
+        fillInputArraySlot:
+        while(i < inputs) { // Find next open spot in input fired array, and change it to true
             if(inputHasFired[i] == false) {
                 inputHasFired[i] = true;
                 inputSum += signalStrength; // Update signal strength
-                end = true;
+                break fillInputArraySlot;
             }
             i++;
         }
 
-        boolean acc = true;
         i = 0;
+        checkAllFired:
         while(acc && i < inputs) { // Check to see if all inputs have fired
             if(inputHasFired[i] == false) {
-                acc = false;
+                break checkAllFired;
             }
             i++;
         }
@@ -109,6 +110,9 @@ public class Node{
         return threshold;
     }
 
+    /**
+     * @return The total sum of the inputs this node has recieved
+     */
     public double getInputSum() {
         return inputSum;
     }
