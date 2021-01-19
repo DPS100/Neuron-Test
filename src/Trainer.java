@@ -19,7 +19,7 @@ public class Trainer implements Manager {
         int generationSize;
         while(true) {
             try{
-                generationSize = Integer.valueOf(System.console().readLine());
+                generationSize = Integer.valueOf(System.console().readLine("Enter the generation size: "));
                 break;
             } catch(Exception e) {
                 System.out.println("Invalid entry");
@@ -62,6 +62,7 @@ public class Trainer implements Manager {
 
     public void doGeneration() {
         int[][] results = new int[size][];
+        createTasks();
         for(int i = 0; i < this.size; i++) {
             int attempt = 1;
             tryReadTask:
@@ -90,8 +91,21 @@ public class Trainer implements Manager {
         //Put fitness function here
     }
 
+    public void sentinelLoop() {
+        watch:
+        while(true) {
+            System.out.println("Generation #" + generation);
+            String input = System.console().readLine("Press y to continue, or anything else to stop: ");
+            if(input.equals("y")) {
+                doGeneration();
+            } else {
+                break watch;
+            }
+        }
+    }
+
     public static void main(String[] args) {
         Trainer trainer = new Trainer();
-        trainer.doGeneration();
+        trainer.sentinelLoop();
     }
 }

@@ -64,7 +64,6 @@ public interface Manager {
 
 
     public default Task startCircuitTask(Circuit circuit, double[] inputs, String threadName) {
-        System.out.println("New " + threadName + " created");
         Task task = new Task(circuit, inputs);
         Thread thread = new Thread(task, threadName);
         thread.start();
