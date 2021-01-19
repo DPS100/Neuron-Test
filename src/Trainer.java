@@ -2,7 +2,10 @@ package src;
 
 public class Trainer implements Manager {
     Circuit[] circuits;
+    double[] scores;
     final int size;
+    final int outputs = 1;
+    int generation = 0;
     double[] circuitInputs;
     Task[] tasks;
 
@@ -29,7 +32,7 @@ public class Trainer implements Manager {
         circuits = new Circuit[size];
         circuitInputs = new double[] {1};
         for (int i = 0; i < size; i++) {
-            circuits[i] = new Circuit(circuitInputs.length, new int[]{1});
+            circuits[i] = new Circuit(circuitInputs.length, new int[]{outputs});
         }
     }
 
@@ -57,16 +60,14 @@ public class Trainer implements Manager {
         }
     }
 
-    public static void main(String[] args) {
-        Trainer trainer = new Trainer();
-        for(int i = 0; i < trainer.size; i++) {
+    public void doGeneration() {
+        int[][] results = new int[size][];
+        for(int i = 0; i < this.size; i++) {
             int attempt = 1;
             tryReadTask:
             while (attempt <= 10) {
                 try {
-                    for (int j = 0; j < trainer.tasks[i].getResults().length; j++) {
-                        System.out.println(trainer.tasks[i].getResults()[j]);
-                    }
+                    results[i] = tasks[i].getResults();
                     break tryReadTask;
                 } catch (Exception e) {
                     System.out.println("Attempt #" + attempt + " waiting for circuit to process failed.");
@@ -81,5 +82,16 @@ public class Trainer implements Manager {
                 }
             }
         }
+        evaluateFitness();
+        generation++;
+    }
+
+    private void evaluateFitness() {
+        //Put fitness function here
+    }
+
+    public static void main(String[] args) {
+        Trainer trainer = new Trainer();
+        trainer.doGeneration();
     }
 }

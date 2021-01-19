@@ -109,8 +109,11 @@ public class Node{
         return threshold;
     }
 
-    public double getInputSum() {
-        return inputSum;
+    /**
+     * @return the value from -1/1 for the percentage strength of all the inputs
+     */
+    public double getInputPercentage() {
+        return inputSum/inputs;
     }
 
     /**
