@@ -9,8 +9,12 @@ The end goal for this repository is to create both a method to train circuits to
 ### UNDER CONSTRUCTION
 This version will be the MVP (minimum viable product).
 It will have the baseline features to train circuits according to a set of inputs, visualize a circuit, read/write circuits to files, and utilize multitasking.
-It will be packaged into a .jar file to be used on any JVM, with dedicated support for windows and prespective support on Linux and a Raspbian Lite x64 server.
+It will be packaged into a .jar file to be used on any JVM, with dedicated support for windows and prespective support on Linux command line for a Raspbian Lite x64 server.
 
-## Verson 1.1
+## Verson 1.0.1
 ### FUTURE RELEASE
 This version will build on the MVP to deliver easier implementation of real-time or feedback reliant training for circuits using a physics or other type of engine.
+
+## Version 1.0.2
+### FUTURE RELEASE
+This version will add a better UI to make the visualization easier on windows.
