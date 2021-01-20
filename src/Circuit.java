@@ -5,7 +5,7 @@ public class Circuit{
     private Node[][] layers; // Node array that this curcuit consists of, includes the outputs but NOT inputs.
     private double[][] connectionStrength; // Array of doubles that each output is multiplied by. Includes inputs to next but no outputs. Each array length is previous node layer size * next node layer size
     private double[][] thresholds; // The net threshold each node must pass to become active.
-    private int inputs; // Number of input nodes (Not included in the layer 2d array).
+    private final int inputs; // Number of input nodes (Not included in the layer 2d array).
 
     /**
      * This constructor needs manual values, and will not generate it's own.
@@ -15,7 +15,8 @@ public class Circuit{
      * @param layerSize The size of each layer (Must greater than or equal to 1)
      */
     Circuit(int inputs, int[] layerSize, double[][] thresholds, double[][]connectionStrength) {
-        setupDefaultValues(inputs, layerSize);
+        this.inputs = inputs;
+        setupDefaultValues(layerSize);
 
         this.thresholds = thresholds;
         this.connectionStrength = connectionStrength;
@@ -31,8 +32,9 @@ public class Circuit{
      * @param layerSize The size of each layer (Must greater than or equal to 1)
      */
     Circuit(int inputs, int[] layerSize) {
-        setupDefaultValues(inputs, layerSize);
-        generateValues(inputs, layerSize);
+        this.inputs = inputs;
+        setupDefaultValues(layerSize);
+        generateValues(layerSize);
 
         createNodes();
     }
@@ -42,9 +44,7 @@ public class Circuit{
      * @param inputs Number of inputs
      * @param layerSize The size of each layer (Must greater than or equal to 1)
      */
-    private void setupDefaultValues(int inputs, int[] layerSize) {
-        this.inputs = inputs;
-
+    private void setupDefaultValues(int[] layerSize) {
         layers = new Node[layerSize.length][];
         for(int i = 0; i < layerSize.length; i++) { // Set each layer to the correct size
             layers[i] = new Node[layerSize[i]];
@@ -56,7 +56,7 @@ public class Circuit{
      * @param inputs Number of inputs
      * @param layerSize The size of each layer (Must greater than or equal to 1)
      */
-    private void generateValues(int inputs, int[] layerSize) {
+    private void generateValues(int[] layerSize) {
         generateThresholds(inputs, layerSize);
         generateConnectionStrengths(inputs, layerSize);
     }
@@ -144,6 +144,32 @@ public class Circuit{
             outputs[i] = layers[layers.length - 1][i].getState(); // Fill array with the state of each output node
         }
         return outputs;
+    }
+
+    public synchronized void mutate(double mutationRate) {
+        mutateConnections(mutationRate);
+        mutateThresholds(mutationRate);
+        createNodes();
+    }
+
+    private void mutateConnections(double mutationRate) {
+        for(int x = 0; x < connectionStrength.length; x++) {
+            for(int y = 0; y < connectionStrength[x].length; y++) {
+                if(Math.random() < mutationRate) {
+                    connectionStrength[x][y] = Math.random() * 2 - 1;
+                }
+            }
+        }
+    }
+
+    private void mutateThresholds(double mutationRate) {
+        for(int x = 0; x < thresholds.length; x++) {
+            for(int y = 0; y < thresholds[x].length; y++) {
+                if(Math.random() < mutationRate) {
+                    thresholds[x][y] = Math.random();
+                }
+            }
+        }
     }
 
     /**
