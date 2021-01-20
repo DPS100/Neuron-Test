@@ -2,7 +2,7 @@ package src;
 
 public class Trainer implements Manager {
     Circuit[] circuits;
-    double[] scores;
+    double[] fitness;
     final int size;
     final int outputs = 1;
     int generation = 0;
@@ -11,8 +11,9 @@ public class Trainer implements Manager {
 
     Trainer() {
         size = getGenerationSize();
+        circuitInputs = new double[]{1.0,1.0};
         createCircuits();
-        createTasks();
+        tasks = new Task[size];
     }
 
     private int getGenerationSize() {
@@ -30,76 +31,73 @@ public class Trainer implements Manager {
 
     private void createCircuits() {
         circuits = new Circuit[size];
-        circuitInputs = new double[] {1};
+        fitness = new double[size];
         for (int i = 0; i < size; i++) {
-            circuits[i] = new Circuit(circuitInputs.length, new int[]{outputs});
+            circuits[i] = new Circuit(circuitInputs.length, new int[]{11, outputs});
         }
     }
 
     private void createTasks() {
-        tasks = new Task[size];
         for(int i = 0; i < size; i++) {
-            int attempt = 1;
-            tryCreateCircuit:
-            while(attempt <= 10) {
-                try{
-                    tasks[i] = startCircuitTask(circuits[i], circuitInputs, "Task #" + i);
-                    break tryCreateCircuit;
-                } catch (Exception e) {
-                    System.out.println("Attempt #" + attempt + " waiting for circuit to be created failed");
-                    e.printStackTrace();
-                    try {
-                        Thread.sleep(1000l);
-                    } catch (InterruptedException e1) {
-                        e1.printStackTrace();
-                    }
-                } finally {
-                    attempt++;
-                }
-            }
+            tasks[i] = startCircuitTask(circuits[i], circuitInputs, "Task #" + i);
         }
     }
 
     public void doGeneration() {
-        int[][] results = new int[size][];
         createTasks();
-        for(int i = 0; i < this.size; i++) {
-            int attempt = 1;
-            tryReadTask:
-            while (attempt <= 10) {
-                try {
-                    results[i] = tasks[i].getResults();
-                    break tryReadTask;
-                } catch (Exception e) {
-                    System.out.println("Attempt #" + attempt + " waiting for circuit to process failed.");
-                    e.printStackTrace();
-                    try {
-                        Thread.sleep(1000l);
-                    } catch (InterruptedException e1) {
-                        e1.printStackTrace();
-                    }
-                } finally {
-                    attempt++;
-                }
-            }
+        for(int i = 0; i < size; i++) {
+            fitness[i] = evaluateFitness(readTask(tasks[i]), circuitInputs);
+            circuits[i].mutate(fitness[i]);
         }
-        evaluateFitness();
+        
         generation++;
     }
 
-    private void evaluateFitness() {
-        //Put fitness function here
+    private int[] readTask(Task task) {
+        int[] results = new int[outputs];
+        int attempt = 1;
+        tryReadTask:
+        while (attempt <= 10) {
+            try {
+                results = task.getResults();
+                break tryReadTask;
+            } catch (Exception e) {
+                System.out.println("Attempt #" + attempt + " waiting for circuit to process failed.");
+                e.printStackTrace();
+                try {
+                    Thread.sleep(1000l);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            } finally {
+                attempt++;
+            }
+        }
+        return results;
+    }
+
+    private double evaluateFitness(int[] results, double[] inputs) {
+        double sum = 0;
+        for(int i = 0; i < results.length; i++) { // Temporary code to see if circuits evolve
+            sum += results[i];
+        }
+        System.out.println("Fitness is " + sum);
+        return 1 - sum; // Mutation rate
     }
 
     public void sentinelLoop() {
         watch:
         while(true) {
-            System.out.println("Generation #" + generation);
-            String input = System.console().readLine("Press y to continue, or anything else to stop: ");
-            if(input.equals("y")) {
-                doGeneration();
-            } else {
+            int generations;
+            try{
+                generations = Integer.valueOf(System.console().readLine("Enter # of generations, or a non-number to quit: "));
+            } catch(Exception e) {
+                System.out.println("Simulation terminated.");
                 break watch;
+            }
+            for(int i = 0; i < generations; i++) {
+                System.out.println("Generation #" + generation);
+                doGeneration();
             }
         }
     }
