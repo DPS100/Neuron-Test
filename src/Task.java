@@ -5,6 +5,7 @@ public class Task implements Runnable{
     private Circuit circuit;
     private double[] inputValues;
     private int[] outputs;
+    private boolean finished = false;
     
     Task(Circuit circuit, double[] inputValues) {
         this.circuit = circuit;
@@ -15,6 +16,7 @@ public class Task implements Runnable{
     public void run() {
         try{
             outputs = circuit.process(inputValues);
+            finished = true;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -28,5 +30,9 @@ public class Task implements Runnable{
      */
     public int[] getResults() {
         return outputs;
+    }
+
+    public boolean isFinished() {
+        return finished;
     }
 }

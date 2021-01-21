@@ -14,7 +14,7 @@ public class Circuit{
      * @param inputs Number of inputs
      * @param layerSize The size of each layer (Must greater than or equal to 1)
      */
-    Circuit(int inputs, int[] layerSize, double[][] thresholds, double[][]connectionStrength) {
+    Circuit(int inputs, int[] layerSize, double[][] thresholds, double[][] connectionStrength) {
         this.inputs = inputs;
         setupDefaultValues(layerSize);
 
@@ -38,6 +38,8 @@ public class Circuit{
 
         createNodes();
     }
+
+    
 
     /**
      * For use with any Circuit constructor to initialize inputs and layersize
@@ -188,6 +190,13 @@ public class Circuit{
      */
     public Node[][] getLayers() {
         return layers;
+    }
+
+    /**
+     * @return The array of thresholds
+     */
+    public double[][] getThresholds() {
+        return thresholds;
     }
 
     /**

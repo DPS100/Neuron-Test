@@ -17,7 +17,7 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
     private int mouseX;
 	private int mouseY;
     private int radius;
-    private Task currentTask;
+    int[] outputs;
     
     private double[] circuitInputs;
     private Circuit circuit;
@@ -31,17 +31,10 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
     }
 
     public void setupCircuit() {
-        boolean circuitSaved = true;
-        String file = "TestCircuit.json";
-        if(circuitSaved) {
-            this.circuit = readCircuitFromFile(file);
-        } else {
-            int[] layerSizes = {3,1};
-            circuit = new Circuit(circuitInputs.length, layerSizes);
-            writeCircuitToFile(file, circuit);
-        }
-        circuitInputs = new double[]{0,0};
-        currentTask = startCircuitTask(circuit, circuitInputs, "task");
+        String name = "Generation 1";
+        this.circuit = readCircuitFromFile(name);
+        circuitInputs = new double[]{1.0,1.0};
+        outputs = new int[circuit.process(circuitInputs).length];
     }
 
     private void setupGUI() {
@@ -79,6 +72,10 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
     }
 
     private void drawCircuit(Graphics g) {
+        outputs = circuit.process(circuitInputs);
+        for(int i = 0; i < outputs.length; i++) {
+            System.out.println(outputs[i]);
+        }
         drawRows(g);
     }
     
@@ -108,6 +105,9 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
             if(layer == 0) { // Input layer?
                 drawNodeCentered(g, x, y, radius, (int)Math.ceil(circuitInputs[i]));
                 g.drawString("" + (double)Math.round(circuitInputs[i] * 1000d) / 1000d, x, y);
+            } else if(layer == circuit.getLayers().length) {
+                drawNodeCentered(g, x, y, radius, outputs[i]);
+                g.drawString("" + (double)Math.round(circuit.getLayers()[layer - 1][i].getThreshold() * 1000d) / 1000d, x, y);
             } else {
                 drawNodeCentered(g, x, y, radius, circuit.getLayers()[layer - 1][i].getState());
                 g.drawString("" + (double)Math.round(circuit.getLayers()[layer - 1][i].getThreshold() * 1000d) / 1000d, x, y);
@@ -149,7 +149,6 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
         mouseX = e.getX();
         mouseY = e.getY();
         circuitInputs = new double[]{(double)mouseX / this.getWidth(), (double)mouseY / this.getHeight()};
-        currentTask = startCircuitTask(circuit, circuitInputs, "thread");
         repaint();
     }
 

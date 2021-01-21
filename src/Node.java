@@ -68,7 +68,6 @@ public class Node{
      * @param signalStrength Strength of the signal this node should recieve
      */
     public void recieveSignal(double signalStrength) {
-        boolean end = false;
         int i = 0;
         fillInputArraySlot:
         while(i < inputs) { // Find next open spot in input fired array, and change it to true

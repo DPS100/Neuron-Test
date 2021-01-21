@@ -4,7 +4,8 @@ public class Trainer implements Manager {
     Circuit[] circuits;
     double[] fitness;
     final int size;
-    final int outputs = 1;
+    final int outputs = 10;
+    double bestFitness = 0;
     int generation = 0;
     double[] circuitInputs;
     Task[] tasks;
@@ -33,7 +34,7 @@ public class Trainer implements Manager {
         circuits = new Circuit[size];
         fitness = new double[size];
         for (int i = 0; i < size; i++) {
-            circuits[i] = new Circuit(circuitInputs.length, new int[]{11, outputs});
+            circuits[i] = new Circuit(circuitInputs.length, new int[]{10, outputs});
         }
     }
 
@@ -43,14 +44,26 @@ public class Trainer implements Manager {
         }
     }
 
-    public void doGeneration() {
-        createTasks();
-        for(int i = 0; i < size; i++) {
-            fitness[i] = evaluateFitness(readTask(tasks[i]), circuitInputs);
-            circuits[i].mutate(fitness[i]);
+    public Circuit doGeneration() {
+        int maxTicks = 1;
+        for(int tick = 0; tick < maxTicks; tick++) {
+            createTasks();
+            for(int i = 0; i < size; i++) {
+                fitness[i] = evaluateFitness(tasks[i], circuitInputs);
+            }
         }
-        
-        generation++;
+        int bestIndex = 0;
+        for(int i = 0; i < size; i++) {
+            if(fitness[i] < fitness[bestIndex]) {
+                bestIndex = i;
+            } if (fitness[i] == 0) {
+                circuits[i].mutate(1);
+            } else {
+                circuits[i].mutate(1 / bestFitness);  // Mutation rate
+            }
+        }
+        System.out.println("Best fitness: " + fitness[bestIndex]);
+        return circuits[bestIndex];
     }
 
     private int[] readTask(Task task) {
@@ -58,31 +71,29 @@ public class Trainer implements Manager {
         int attempt = 1;
         tryReadTask:
         while (attempt <= 10) {
-            try {
+            if(task.isFinished()) {
                 results = task.getResults();
                 break tryReadTask;
-            } catch (Exception e) {
+            } else {
                 System.out.println("Attempt #" + attempt + " waiting for circuit to process failed.");
-                e.printStackTrace();
                 try {
-                    Thread.sleep(1000l);
+                    Thread.sleep(100l);
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
-            } finally {
-                attempt++;
             }
+            attempt++;
         }
         return results;
     }
 
-    private double evaluateFitness(int[] results, double[] inputs) {
+    private double evaluateFitness(Task task, double[] inputs) {
         double sum = 0;
+        int[] results = readTask(task);
         for(int i = 0; i < results.length; i++) { // Temporary code to see if circuits evolve
             sum += results[i];
         }
-        System.out.println("Fitness is " + sum);
-        return 1 - sum; // Mutation rate
+        return sum;
     }
 
     public void sentinelLoop() {
@@ -97,7 +108,9 @@ public class Trainer implements Manager {
             }
             for(int i = 0; i < generations; i++) {
                 System.out.println("Generation #" + generation);
-                doGeneration();
+                Circuit toWrite = doGeneration();
+                this.writeCircuitToFile("Generation " + generation, toWrite);
+                generation++;
             }
         }
     }
