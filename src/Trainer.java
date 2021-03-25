@@ -13,7 +13,6 @@ public class Trainer implements Manager {
     Trainer() {
         size = getGenerationSize();
         circuitInputs = new double[]{1.0,1.0};
-        createCircuits();
         tasks = new Task[size];
     }
 
@@ -24,6 +23,7 @@ public class Trainer implements Manager {
                 generationSize = Integer.valueOf(System.console().readLine("Enter the generation size: "));
                 break;
             } catch(Exception e) {
+                System.out.println(e.getMessage());
                 System.out.println("Invalid entry");
             }
         }
@@ -34,7 +34,7 @@ public class Trainer implements Manager {
         circuits = new Circuit[size];
         fitness = new double[size];
         for (int i = 0; i < size; i++) {
-            circuits[i] = new Circuit(circuitInputs.length, new int[]{10, outputs});
+            circuits[i] = new Circuit(circuitInputs.length, new int[]{10, outputs}, ("#" + i + ", gen" + generation + ", mutations:"));
         }
     }
 
@@ -54,15 +54,16 @@ public class Trainer implements Manager {
         }
         int bestIndex = 0;
         for(int i = 0; i < size; i++) {
-            if(fitness[i] < fitness[bestIndex]) {
+            if(fitness[i] > fitness[bestIndex]) {
                 bestIndex = i;
             } if (fitness[i] == 0) {
                 circuits[i].mutate(1);
+                circuits[i].setID(circuits[i].toString() + generation);
             } else {
-                circuits[i].mutate(1 / bestFitness);  // Mutation rate
+                //circuits[i].mutate(1 / bestFitness);  // Mutation rate
             }
         }
-        System.out.println("Best fitness: " + fitness[bestIndex]);
+        System.out.println("Best fitness: " + fitness[bestIndex] + " ID: "+ circuits[bestIndex].toString());
         return circuits[bestIndex];
     }
 
@@ -75,7 +76,7 @@ public class Trainer implements Manager {
                 results = task.getResults();
                 break tryReadTask;
             } else {
-                System.out.println("Attempt #" + attempt + " waiting for circuit to process failed.");
+                if(attempt != 1) System.out.println("Attempt #" + attempt + " waiting for circuit to process failed.");
                 try {
                     Thread.sleep(100l);
                 } catch (InterruptedException e1) {
@@ -108,6 +109,11 @@ public class Trainer implements Manager {
             }
             for(int i = 0; i < generations; i++) {
                 System.out.println("Generation #" + generation);
+                createCircuits();
+                if(i != 0) {
+                    Circuit bestLastGen = readCircuitFromFile("Generation " + (generation - 1));
+                    circuits[0] = bestLastGen;
+                }
                 Circuit toWrite = doGeneration();
                 this.writeCircuitToFile("Generation " + generation, toWrite);
                 generation++;

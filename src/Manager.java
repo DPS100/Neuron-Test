@@ -26,23 +26,18 @@ public interface Manager {
         }
 
         Gson gson = new Gson();
-        Object[] components = new Object[4];
+        Object[] components = new Object[5];
         
-        components[0] = circuit.getInputs();
+        components[0] = circuit.toString();
+        components[1] = circuit.getInputs();
         int[] layerSize = new int[circuit.getLayers().length];
         for(int i = 0; i < circuit.getLayers().length; i++) {
             layerSize[i] = circuit.getLayers()[i].length;
         }
-        components[1] = layerSize;
-        components[2] = circuit.getThresholds();
-        components[3] = circuit.getConnectionStrengths();
+        components[2] = layerSize;
+        components[3] = circuit.getThresholds();
+        components[4] = circuit.getConnectionStrengths();
         
-        /*
-        components[0] = inputs;
-        components[1] = layerSize;
-        components[2] = thresholds;
-        components[3] = connectionStrength;
-        */
         
         String json = gson.toJson(components);
         try {
@@ -79,19 +74,22 @@ public interface Manager {
             reader.close();
 
             Object[] components = gson.fromJson(json, Object[].class);
-            int inputs = Math.round(Math.round((double)components[0]));
-            Object[] layerSizeNotCast = ((ArrayList<Double>)components[1]).toArray();
+            String id = (String)components[0];
+            int inputs = Math.round(Math.round((double)components[1]));
+            Object[] layerSizeNotCast = ((ArrayList<Double>)components[2]).toArray();
             int[] layerSize = new int[layerSizeNotCast.length];
             for(int i = 0; i < layerSize.length; i++) {
                 layerSize[i] = Math.round(Math.round((double)layerSizeNotCast[i]));
             }
 
-            ArrayList<ArrayList<Double>> thresholdsArrayList = (ArrayList<ArrayList<Double>>)components[2];
+            ArrayList<ArrayList<Double>> thresholdsArrayList = (ArrayList<ArrayList<Double>>)components[3];
             double[][] thresholds = convert2D(thresholdsArrayList);
-            ArrayList<ArrayList<Double>> connectionStrengthArrayList = (ArrayList<ArrayList<Double>>)components[3];
+            ArrayList<ArrayList<Double>> connectionStrengthArrayList = (ArrayList<ArrayList<Double>>)components[4];
             double[][] connectionStrength = convert2D(connectionStrengthArrayList);
+
             
-            return new Circuit(inputs, layerSize, thresholds, connectionStrength);
+            
+            return new Circuit(inputs, layerSize, thresholds, connectionStrength, id);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             return null;

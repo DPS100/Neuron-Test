@@ -2,6 +2,7 @@ package src;
 
 public class Circuit{
 
+    private String id; // Given when Node is created
     private Node[][] layers; // Node array that this curcuit consists of, includes the outputs but NOT inputs.
     private double[][] connectionStrength; // Array of doubles that each output is multiplied by. Includes inputs to next but no outputs. Each array length is previous node layer size * next node layer size
     private double[][] thresholds; // The net threshold each node must pass to become active.
@@ -14,7 +15,7 @@ public class Circuit{
      * @param inputs Number of inputs
      * @param layerSize The size of each layer (Must greater than or equal to 1)
      */
-    Circuit(int inputs, int[] layerSize, double[][] thresholds, double[][] connectionStrength) {
+    Circuit(int inputs, int[] layerSize, double[][] thresholds, double[][] connectionStrength, String id) {
         this.inputs = inputs;
         setupDefaultValues(layerSize);
 
@@ -22,6 +23,7 @@ public class Circuit{
         this.connectionStrength = connectionStrength;
 
         createNodes();
+        this.id = id;
     }
 
     /**
@@ -31,12 +33,13 @@ public class Circuit{
      * @param inputs Number of inputs
      * @param layerSize The size of each layer (Must greater than or equal to 1)
      */
-    Circuit(int inputs, int[] layerSize) {
+    Circuit(int inputs, int[] layerSize, String id) {
         this.inputs = inputs;
         setupDefaultValues(layerSize);
         generateValues(layerSize);
 
         createNodes();
+        this.id = id;
     }
 
     
@@ -183,6 +186,14 @@ public class Circuit{
                 layers[x][y].setCleared();
             }
         }
+    }
+
+    public void setID(String id) {
+        this.id = id;
+    }
+
+    public String toString() {
+        return id;
     }
 
     /**

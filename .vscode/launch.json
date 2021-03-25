@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch Trainer",
+            "request": "launch",
+            "mainClass": "src.Trainer",
+            "projectName": "Neuron Test_ae113229"
+        },
+        {
+            "type": "java",
             "name": "Launch Current File",
             "request": "launch",
             "mainClass": "${file}"
