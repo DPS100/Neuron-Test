@@ -2,13 +2,26 @@ package src;
 
 public class Node{
 
+    public enum NodeState{ 
+        UNPROCESSED(-1),
+        INACTIVE(0),
+        ACTIVE(1);
+
+        public final int value;
+
+        private NodeState(int value) {
+            this.value = value;
+        }
+    }
+
     private final Node[] outputs;
     private double[] outputStrengthFactors;
     private final int inputs;
     private double inputSum;
     private boolean[] inputHasFired;
     private double threshold;
-    private int state;
+    private NodeState state;
+    
 
     /**
      * This constructor makes a node with 1 or more target connecting input and output nodes
@@ -25,7 +38,7 @@ public class Node{
         inputHasFired = new boolean[inputs];
         setUnfired(inputHasFired);
         this.threshold = threshold;
-        state = -1;
+        state = NodeState.UNPROCESSED;
     }
 
     /**
@@ -45,9 +58,9 @@ public class Node{
      */
     private void process() {
         if(inputSum >= threshold) { // Check if each input is enough to overcome threshold
-            this.state = 1; // Over threshold, set state to active
+            this.state = NodeState.ACTIVE;
         } else {
-            this.state = 0; // Under threshold, set state to inactive
+            this.state = NodeState.INACTIVE;
         }
     }
 
@@ -58,7 +71,7 @@ public class Node{
     private void sendSignals() {
         if(outputs.length > 0) { // Only works if there is > 1 output node
             for(int i = 0; i < outputs.length; i++) { // Send each connected node a signal
-                outputs[i].recieveSignal(state * outputStrengthFactors[i]); // Signal is this node's activity multiplied by the output strengh factor
+                outputs[i].recieveSignal(state.value * outputStrengthFactors[i]); // Signal is this node's state (0 or 1) multiplied by the output strengh factor
             }
         }
     }
@@ -98,9 +111,8 @@ public class Node{
 
     /**
      * @return Current state of this node.
-     * -1 for unprocessed, 0 for inactive, 1 for active
      */
-    public int getState() {
+    public NodeState getState() {
         return state;
     }
 

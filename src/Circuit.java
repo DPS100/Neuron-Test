@@ -146,7 +146,7 @@ public class Circuit{
 
         int[] outputs = new int[layers[layers.length - 1].length]; // Create an int array with length of output layer
         for(int i = 0; i < outputs.length; i++) {
-            outputs[i] = layers[layers.length - 1][i].getState(); // Fill array with the state of each output node
+            outputs[i] = layers[layers.length - 1][i].getState().value; // Fill array with the state of each output node
         }
         return outputs;
     }

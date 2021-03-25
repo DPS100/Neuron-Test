@@ -109,7 +109,7 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
                 drawNodeCentered(g, x, y, radius, outputs[i]);
                 g.drawString("" + (double)Math.round(circuit.getLayers()[layer - 1][i].getThreshold() * 1000d) / 1000d, x, y);
             } else {
-                drawNodeCentered(g, x, y, radius, circuit.getLayers()[layer - 1][i].getState());
+                drawNodeCentered(g, x, y, radius, circuit.getLayers()[layer - 1][i].getState().value);
                 g.drawString("" + (double)Math.round(circuit.getLayers()[layer - 1][i].getThreshold() * 1000d) / 1000d, x, y);
             }
 			
