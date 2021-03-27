@@ -6,30 +6,10 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Launch Trainer",
+            "name": "Launch Java Program",
             "request": "launch",
-            "mainClass": "src.Trainer",
-            "projectName": "Neuron Test_ae113229"
-        },
-        {
-            "type": "java",
-            "name": "Launch Current File",
-            "request": "launch",
-            "mainClass": "${file}"
-        },
-        {
-            "type": "java",
-            "name": "Launch Trainer",
-            "request": "launch",
-            "mainClass": "src.Trainer",
-            "projectName": "Neuron-Test_983489ab"
-        },
-        {
-            "type": "java",
-            "name": "Launch VisualManager",
-            "request": "launch",
-            "mainClass": "src.VisualManager",
-            "projectName": "Neuron-Test_983489ab"
+            "mainClass": "src.Trainer"
         }
+        
     ]
 }

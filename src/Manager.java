@@ -61,6 +61,7 @@ public interface Manager {
      * @param circuit Null circuit object that will be overwritten
      * @return If circuit has been successfully read
      */
+    @SuppressWarnings("unchecked")
     public default Circuit readCircuitFromFile(String file) {
         Gson gson = new Gson();
         try {

@@ -4,9 +4,9 @@ public class Trainer implements Manager {
     Circuit[] circuits;
     double[] fitness;
     final int size;
-    final int outputs = 10;
+    final int outputs = 20;
     double bestFitness = 0;
-    int generation = 0;
+    static int generation = 0;
     double[] circuitInputs;
     Task[] tasks;
 
@@ -124,5 +124,6 @@ public class Trainer implements Manager {
     public static void main(String[] args) {
         Trainer trainer = new Trainer();
         trainer.sentinelLoop();
+        new VisualManager(true, "Generation " + (generation - 1));
     }
 }

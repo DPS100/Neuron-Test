@@ -17,6 +17,7 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
     private int mouseX;
 	private int mouseY;
     private int radius;
+    private String fileName;
     int[] outputs;
     
     private double[] circuitInputs;
@@ -25,14 +26,14 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
     /**
      * @param guiEnabled Will this manager run with a graphical user interface?
      */
-    public VisualManager(boolean guiEnabled) {
+    public VisualManager(boolean guiEnabled, String fileName) {
+        this.fileName = fileName;
         setupCircuit();
         if(guiEnabled) {setupGUI();}
     }
 
     public void setupCircuit() {
-        String name = "Generation 1";
-        this.circuit = readCircuitFromFile(name);
+        this.circuit = readCircuitFromFile(fileName);
         circuitInputs = new double[]{1.0,1.0};
         outputs = new int[circuit.process(circuitInputs).length];
     }
@@ -52,10 +53,6 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
         repaint();
     }
 
-    public static void main(String[] args) {
-        new VisualManager(true);
-    } 
-
     @Override
     public void paint(Graphics g) {
         g.clearRect(0, 0, (int)frame.getWidth(), (int)frame.getHeight()); // Clears the window
@@ -73,9 +70,9 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
 
     private void drawCircuit(Graphics g) {
         outputs = circuit.process(circuitInputs);
-        for(int i = 0; i < outputs.length; i++) {
+        /*for(int i = 0; i < outputs.length; i++) {
             System.out.println(outputs[i]);
-        }
+        }*/
         drawRows(g);
     }
     
