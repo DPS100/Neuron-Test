@@ -42,8 +42,6 @@ public class Circuit{
         this.id = id;
     }
 
-    
-
     /**
      * For use with any Circuit constructor to initialize inputs and layersize
      * @param inputs Number of inputs
@@ -134,9 +132,9 @@ public class Circuit{
     /**
      * See what the circuit outputs with a selection of input values.
      * @param inputValues Needs to be the same length as inputs.
-     * @return Array of ints (1 = active, 0 = inactive)
+     * @return Array of doubles
      */
-    public synchronized int[] process(double[] inputValues) {
+    public synchronized double[] process(double[] inputValues) {
         clearCircuit();
         for(int y = 0; y < inputValues.length; y++) { // Place on "artificial" layer
             for(int y2 = 0; y2 < layers[0].length; y2++) { // Place on first node layer
@@ -144,9 +142,9 @@ public class Circuit{
             }
         }
 
-        int[] outputs = new int[layers[layers.length - 1].length]; // Create an int array with length of output layer
+        double[] outputs = new double[layers[layers.length - 1].length]; // Create an int array with length of output layer
         for(int i = 0; i < outputs.length; i++) {
-            outputs[i] = layers[layers.length - 1][i].getState().value; // Fill array with the state of each output node
+            outputs[i] = layers[layers.length - 1][i].getOutputNodeResult(); // Fill array with the average of each output node
         }
         return outputs;
     }

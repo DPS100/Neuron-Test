@@ -18,7 +18,7 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
 	private int mouseY;
     private int radius;
     private String fileName;
-    int[] outputs;
+    double[] outputs;
     
     private double[] circuitInputs;
     private Circuit circuit;
@@ -35,7 +35,7 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
     public void setupCircuit() {
         this.circuit = readCircuitFromFile(fileName);
         circuitInputs = new double[]{1.0,1.0};
-        outputs = new int[circuit.process(circuitInputs).length];
+        outputs = new double[circuit.process(circuitInputs).length];
     }
 
     private void setupGUI() {
@@ -70,9 +70,6 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
 
     private void drawCircuit(Graphics g) {
         outputs = circuit.process(circuitInputs);
-        /*for(int i = 0; i < outputs.length; i++) {
-            System.out.println(outputs[i]);
-        }*/
         drawRows(g);
     }
     
@@ -130,11 +127,12 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
 		}
 	}
 
-    private void drawNodeCentered(Graphics g, int x, int y, int radius, int nodeState) {
-        if(nodeState > 0) {
-            g.setColor(new Color(255, 255, 0, 255 / 2));
+    private void drawNodeCentered(Graphics g, int x, int y, int radius, double strength) {
+        if(strength > 0) {
+            int colorStrength = (int)(255 * strength);
+            g.setColor(new Color(colorStrength, colorStrength, 0, 255 / 2));
             g.fillOval(x - radius, y - radius, radius * 2, radius * 2);
-        } else if(nodeState == 0) {
+        } else if(strength == 0) {
             g.setColor(new Color(0, 0, 0, 255 / 2));
             g.fillOval(x - radius, y - radius, radius * 2, radius * 2);
         }

@@ -4,7 +4,7 @@ public class Task implements Runnable{
 
     private Circuit circuit;
     private double[] inputValues;
-    private int[] outputs;
+    private double[] outputs;
     private boolean finished = false;
     
     Task(Circuit circuit, double[] inputValues) {
@@ -28,7 +28,7 @@ public class Task implements Runnable{
      * I would recommend trying another task, or waiting for this one to finish.
      * @return results of the circuit
      */
-    public int[] getResults() {
+    public double[] getResults() {
         return outputs;
     }
 

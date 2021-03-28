@@ -6,10 +6,10 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Launch Java Program",
+            "name": "Launch Main",
             "request": "launch",
-            "mainClass": "src.Trainer"
+            "mainClass": "src.Main",
+            "projectName": "Neuron Test_ae113229"
         }
-        
     ]
 }

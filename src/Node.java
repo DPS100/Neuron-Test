@@ -26,7 +26,7 @@ public class Node{
     /**
      * This constructor makes a node with 1 or more target connecting input and output nodes
      * @param outputs Array of nodes this node will send signals to
-     * @param outputStrengthFactor The array of factors (between 0 - 1) that each signal will be multiplied by
+     * @param outputStrengthFactor The array of factors (between -1 and 1) that each signal will be multiplied by
      * @param inputs Number of nodes that will be sending signals to this node
      * @param threshold The sum of the inputs that will be needed to exceeded to fire 
      */
@@ -57,7 +57,7 @@ public class Node{
      * Should only be called once all input nodes have fired
      */
     private void process() {
-        if(inputSum >= threshold) { // Check if each input is enough to overcome threshold
+        if(inputSum / inputs >= threshold) { // Check if each input is enough to overcome threshold
             this.state = NodeState.ACTIVE;
         } else {
             this.state = NodeState.INACTIVE;
@@ -106,6 +106,14 @@ public class Node{
         if(shouldProcess) { // If all inputs are completed
             process();
             sendSignals();
+        }
+    }
+
+    public double getOutputNodeResult() {
+        if(state == NodeState.INACTIVE) {
+            return 0;
+        } else {
+            return inputSum / inputs;
         }
     }
 

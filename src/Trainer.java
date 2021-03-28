@@ -1,40 +1,26 @@
 package src;
 
-public class Trainer implements Manager {
+public abstract class Trainer implements Manager {
     Circuit[] circuits;
     double[] fitness;
     final int size;
-    final int outputs = 20;
+    final int outputs = 1;
     double bestFitness = 0;
     static int generation = 0;
     double[] circuitInputs;
     Task[] tasks;
 
-    Trainer() {
-        size = getGenerationSize();
+    Trainer(int size) {
+        this.size = size;
         circuitInputs = new double[]{1.0,1.0};
         tasks = new Task[size];
-    }
-
-    private int getGenerationSize() {
-        int generationSize;
-        while(true) {
-            try{
-                generationSize = Integer.valueOf(System.console().readLine("Enter the generation size: "));
-                break;
-            } catch(Exception e) {
-                System.out.println(e.getMessage());
-                System.out.println("Invalid entry");
-            }
-        }
-        return generationSize;
     }
 
     private void createCircuits() {
         circuits = new Circuit[size];
         fitness = new double[size];
         for (int i = 0; i < size; i++) {
-            circuits[i] = new Circuit(circuitInputs.length, new int[]{10, outputs}, ("#" + i + ", gen" + generation + ", mutations:"));
+            circuits[i] = new Circuit(circuitInputs.length, new int[]{outputs}, ("#" + i + ", gen" + generation + ", mutations:"));
         }
     }
 
@@ -44,7 +30,7 @@ public class Trainer implements Manager {
         }
     }
 
-    public Circuit doGeneration() {
+    private Circuit doGeneration() {
         int maxTicks = 1;
         for(int tick = 0; tick < maxTicks; tick++) {
             createTasks();
@@ -67,8 +53,14 @@ public class Trainer implements Manager {
         return circuits[bestIndex];
     }
 
-    private int[] readTask(Task task) {
-        int[] results = new int[outputs];
+    /**
+     * Attempt to read a task- has incompleted circuit protections
+     * 
+     * @param task Task that may or may not contain a completed circuit
+     * @return Circuit outputs
+     */
+    protected double[] readTask(Task task) {
+        double[] results = new double[outputs];
         int attempt = 1;
         tryReadTask:
         while (attempt <= 10) {
@@ -88,16 +80,18 @@ public class Trainer implements Manager {
         return results;
     }
 
-    private double evaluateFitness(Task task, double[] inputs) {
-        double sum = 0;
-        int[] results = readTask(task);
-        for(int i = 0; i < results.length; i++) { // Temporary code to see if circuits evolve
-            sum += results[i];
-        }
-        return sum;
-    }
+    /**
+     * Given a task, rate how well the member circuit performed.
+     * May or may not use the given inputs.
+     * 
+     * @param task Task that contains a circuit (May not be completed)
+     * @param inputs
+     * @return Given fitness-- higher = better
+     * @see 
+     */
+    protected abstract double evaluateFitness(Task task, double[] inputs);
 
-    public void sentinelLoop() {
+    protected void sentinelLoop() {
         watch:
         while(true) {
             int generations;
@@ -121,9 +115,7 @@ public class Trainer implements Manager {
         }
     }
 
-    public static void main(String[] args) {
-        Trainer trainer = new Trainer();
-        trainer.sentinelLoop();
-        new VisualManager(true, "Generation " + (generation - 1));
+    public int getGeneration() {
+        return generation;
     }
 }
