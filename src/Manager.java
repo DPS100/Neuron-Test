@@ -125,4 +125,36 @@ public interface Manager {
         thread.start();
         return task;
     }
+
+    /**
+     * Attempt to read a task- has incompleted circuit protections
+     * 
+     * @param task Task that may or may not contain a completed circuit
+     * @param outputs Number of outputs that target circuit has
+     * @return Circuit outputs
+     */
+    public default double[] readTask(Task task, int outputs) {
+        double[] results = new double[outputs];
+        int attempt = 1;
+        tryReadTask:
+        while (attempt <= 10) {
+            if(task.isFinished()) {
+                results = task.getResults();
+                break tryReadTask;
+            } else {
+                if(attempt != 1) System.out.println("Attempt #" + attempt + " waiting for circuit " + task.circuitName() +  " to process failed.");
+                try {
+                    Thread.sleep(100l);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            }
+            attempt++;
+        }
+        if(attempt >= 11) {
+            System.out.println("Circuit proccess failed.");
+            System.exit(1);
+        }
+        return results;
+    }
 }

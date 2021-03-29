@@ -6,10 +6,12 @@ public class Task implements Runnable{
     private double[] inputValues;
     private double[] outputs;
     private boolean finished = false;
+    private String circuitName;
     
     Task(Circuit circuit, double[] inputValues) {
         this.circuit = circuit;
         this.inputValues = inputValues;
+        this.circuitName = circuit.toString();
     }
 
     @Override
@@ -34,5 +36,9 @@ public class Task implements Runnable{
 
     public boolean isFinished() {
         return finished;
+    }
+
+    public String circuitName() {
+        return circuitName;
     }
 }

@@ -13,7 +13,7 @@ public class Circuit{
      * A circuit consists of one "artificial" layer made up of inputs,
      * and specified layer sizes that make up normal layers (includes the output nodes).
      * @param inputs Number of inputs
-     * @param layerSize The size of each layer (Must greater than or equal to 1)
+     * @param layerSize The size of each layer (Must have at least one value)
      */
     Circuit(int inputs, int[] layerSize, double[][] thresholds, double[][] connectionStrength, String id) {
         this.inputs = inputs;
