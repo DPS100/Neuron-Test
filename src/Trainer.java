@@ -7,22 +7,36 @@ public abstract class Trainer implements Manager {
     public final int generationSize;
     public final int inputs;
     public final int[] layerSize;
+    public final double mutationRate;
     private int generation = 0;
     private Task[] tasks;
 
-    Trainer(int generationSize, int inputs, int[] layerSize) {
+    Trainer(int generationSize, int inputs, int[] layerSize, double mutationRate) {
         this.generationSize = generationSize;
         this.inputs = inputs;
         this.layerSize = layerSize;
+        this.mutationRate = mutationRate;
         circuitInputs = new double[generationSize][inputs];
         tasks = new Task[generationSize];
     }
 
-    private void createCircuits() {
+    private void createCircuits(Circuit bestCircuit) {
         circuits = new Circuit[generationSize];
         fitness = new double[generationSize];
-        for (int i = 0; i < generationSize; i++) {
-            circuits[i] = new Circuit(inputs, layerSize, ("#" + i + ", gen" + generation + ", mutations:"));
+        if(generation == 0 || bestCircuit == null) { // First generation
+            for(int i = 0; i < generationSize; i++) {
+                circuits[i] = new Circuit(inputs, layerSize, ("#" + i + ", gen" + generation + ", mutations: Original"));
+            }
+        } else {
+            circuits[0] = bestCircuit;
+            for (int i = 1; i < generationSize; i++) {
+                // Copy best circuit, then mutate
+                circuits[i] = bestCircuit.createMutatedChild(mutationRate, ("#" + i + ", gen" + generation + ", mutations:"));
+                circuits[i].mutations = circuits[i].mutations + generation + " ";
+                circuits[i].setID(circuits[i].toString() + circuits[i].mutations);
+                // New random circuit
+                // circuits[i] = new Circuit(inputs, layerSize, ("#" + i + ", gen" + generation + ", mutations:"));
+            }
         }
     }
 
@@ -44,11 +58,6 @@ public abstract class Trainer implements Manager {
         for(int i = 0; i < generationSize; i++) {
             if(fitness[i] > fitness[bestIndex]) {
                 bestIndex = i;
-            } if (fitness[i] == 0) {
-                circuits[i].mutate(1);
-                circuits[i].setID(circuits[i].toString() + generation + ',');
-            } else {
-                //circuits[i].mutate(1 / bestFitness);  // Mutation rate
             }
         }
         System.out.println("Best fitness: " + fitness[bestIndex] + " ID: "+ circuits[bestIndex].toString());
@@ -74,6 +83,7 @@ public abstract class Trainer implements Manager {
     protected abstract void fillInputs(double[][] circuitInputs);
 
     protected void sentinelLoop() {
+        Circuit bestLastGen = null;
         watch:
         while(true) {
             int generations;
@@ -85,22 +95,17 @@ public abstract class Trainer implements Manager {
             }
             for(int i = 0; i < generations; i++) {
                 System.out.println("Generation #" + generation);
-                createCircuits();
+                createCircuits(bestLastGen);
                 fillInputs(circuitInputs);
-                // FIXME reproduction/mutation step not defined
-                if(i != 0) {
-                    Circuit bestLastGen = readCircuitFromFile("Generation " + (generation - 1));
-                    circuits[0] = bestLastGen;
-                }
-                Circuit toWrite = doGeneration();
-                this.writeCircuitToFile("Generation " + generation, toWrite);
+                bestLastGen = doGeneration();
+                this.writeCircuitToFile("Generation " + generation, bestLastGen);
                 generation++;
             }
         }
     }
 
     /**
-     * Attempt to get user to enter an integer. Will end the program on unknown error, 
+     * Attempt to get user to enter a double. Will end the program on unknown error, 
      * but handle uncastable string by prompting user again.
      * 
      * @param text Question to prompt the user with

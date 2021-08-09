@@ -23,6 +23,7 @@ public interface Manager {
             newFile.createNewFile();
         } catch (IOException e1) {
             e1.printStackTrace();
+            createPath(file);
         }
 
         Gson gson = new Gson();
@@ -46,6 +47,7 @@ public interface Manager {
             writer.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            createPath(file);
             return false;
         } catch (IOException e) {
             e.printStackTrace();
@@ -87,18 +89,44 @@ public interface Manager {
             double[][] thresholds = convert2D(thresholdsArrayList);
             ArrayList<ArrayList<Double>> connectionStrengthArrayList = (ArrayList<ArrayList<Double>>)components[4];
             double[][] connectionStrength = convert2D(connectionStrengthArrayList);
-
-            
             
             return new Circuit(inputs, layerSize, thresholds, connectionStrength, id);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            createPath(file);
             return null;
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
 
+    }
+
+    private void createPath(String file) {
+        System.out.println("Could not find file. Creating new root folder");
+            File newDir = new File("Saved Circuits");
+            boolean completed = false;
+            try {
+                completed = newDir.mkdir();
+            } catch (SecurityException s) {
+                s.printStackTrace();
+            }
+
+            if(!completed) {
+                System.out.println("Folder creation failed.");
+            }
+
+            System.out.println("Creating new file");
+            File newFile = new File("Saved Circuits\\" + file + ".json");
+            try {
+                if(newFile.createNewFile()) {
+                    System.out.println("File creation succeeded");
+                } else {
+                    System.out.println("File creation failed");
+                }
+            } catch (Exception e2) {
+                e2.printStackTrace();
+            }
     }
 
     private double[] convert1D(ArrayList<Double> arrayList) {

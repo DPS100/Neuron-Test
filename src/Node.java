@@ -1,5 +1,8 @@
 package src;
 
+/**
+ * Also referred to as a neuron, Nodes are objects that can process inputs and connect together to form an input
+ */
 public class Node{
 
     public enum NodeState{ 
@@ -14,9 +17,9 @@ public class Node{
         }
     }
 
-    private final Node[] outputs;
-    private double[] outputStrengthFactors;
-    private final int inputs;
+    private final Node[] outputs; // Node array this node will output to
+    private double[] outputStrengthFactors; // Strengths of the outputs this node will send
+    private final int inputs; // Number of nodes sending signals to this node
     private double inputSum;
     private boolean[] inputHasFired;
     private double threshold;
@@ -109,6 +112,9 @@ public class Node{
         }
     }
 
+    /**
+     * @return 0 if inactive, or the current output otherwise
+     */
     public double getOutputNodeResult() {
         if(state == NodeState.INACTIVE) {
             return 0;

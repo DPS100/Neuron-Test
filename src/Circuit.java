@@ -3,6 +3,8 @@ package src;
 public class Circuit{
 
     private String id; // Given when Node is created
+    public String mutations = "";
+    private int[] layerSize;
     private Node[][] layers; // Node array that this curcuit consists of, includes the outputs but NOT inputs.
     private double[][] connectionStrength; // Array of doubles that each output is multiplied by. Includes inputs to next but no outputs. Each array length is previous node layer size * next node layer size
     private double[][] thresholds; // The net threshold each node must pass to become active.
@@ -17,6 +19,7 @@ public class Circuit{
      */
     Circuit(int inputs, int[] layerSize, double[][] thresholds, double[][] connectionStrength, String id) {
         this.inputs = inputs;
+        this.layerSize = layerSize;
         setupDefaultValues(layerSize);
 
         this.thresholds = thresholds;
@@ -35,6 +38,7 @@ public class Circuit{
      */
     Circuit(int inputs, int[] layerSize, String id) {
         this.inputs = inputs;
+        this.layerSize = layerSize;
         setupDefaultValues(layerSize);
         generateValues(layerSize);
 
@@ -155,6 +159,19 @@ public class Circuit{
         createNodes();
     }
 
+    /**
+     * 
+     * @param mutationRate Rate at which child will mutate
+     * @param childID Name of the new child
+     * @return Mutated child
+     */
+    public synchronized Circuit createMutatedChild(double mutationRate, String childID) {
+        Circuit child = this.clone();
+        child.mutate(mutationRate);
+        child.setID(childID);
+        return child;
+    }
+
     private void mutateConnections(double mutationRate) {
         for(int x = 0; x < connectionStrength.length; x++) {
             for(int y = 0; y < connectionStrength[x].length; y++) {
@@ -220,5 +237,21 @@ public class Circuit{
      */
     public double[][] getConnectionStrengths() {
         return connectionStrength;
+    }
+
+    @Override
+    public Circuit clone(){
+        return new Circuit(inputs, layerSize.clone(), clone2DArray(thresholds), clone2DArray(connectionStrength), id);
+    }
+
+    public double[][] clone2DArray(double[][] arr) {
+        double[][] newArr = new double[arr.length][];
+        for(int i = 0; i < arr.length; i++) {
+            newArr[i] = new double[arr[i].length];
+            for(int j = 0; j < arr[i].length; j++) {
+                newArr[i][j] = arr[i][j];
+            }
+        }
+        return newArr;
     }
 }

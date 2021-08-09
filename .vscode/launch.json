@@ -9,7 +9,6 @@
             "name": "Launch Main",
             "request": "launch",
             "mainClass": "src.Main",
-            "projectName": "Neuron Test_ae113229"
         }
     ]
 }

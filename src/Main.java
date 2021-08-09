@@ -2,8 +2,8 @@ package src;
 
 public class Main extends Trainer {
 
-    private Main(int generationSize, int inputs, int[] layerSize) {
-        super(generationSize, inputs, layerSize);
+    private Main(int generationSize, int inputs, int[] layerSize, double mutationRate) {
+        super(generationSize, inputs, layerSize, mutationRate);
     }
 
     /**
@@ -35,11 +35,12 @@ public class Main extends Trainer {
         int generationSize = (int)Trainer.getDoubleFromUser("Enter the generation size: ");
         int inputs = 2; System.out.println("Enter number of inputs (currently locked): 2");
         int layers = (int)Trainer.getDoubleFromUser("Enter number of non-input layers (includes output): ");
+        double mutationRate = Trainer.getDoubleFromUser("Enter the mutation rate (between 0 and 1, 0 results in no mutations and 1 results in full mutations): ");
         int[] layerSize = new int[layers];
         for(int i = 0; i < layers; i++) {
             layerSize[i] = (int)Trainer.getDoubleFromUser("Enter layer " + (i + 1) + " size: ");
         }
-        Main trainer = new Main(generationSize, inputs, layerSize);
+        Main trainer = new Main(generationSize, inputs, layerSize, mutationRate);
         trainer.sentinelLoop();
         new VisualManager(true, "Generation " + (trainer.getGeneration() - 1));
     }
