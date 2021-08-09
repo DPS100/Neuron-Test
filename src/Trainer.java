@@ -2,22 +2,24 @@ package src;
 
 public abstract class Trainer implements Manager {
     private Circuit[] circuits;
-    private double[][] circuitInputs;
+    private double[][][] circuitInputs; // [generation size] [number of tests per circuit] [number of inputs per test]
     private double[] fitness;
     public final int generationSize;
     public final int inputs;
     public final int[] layerSize;
     public final double mutationRate;
+    private final double[][] desiredOutputs = new double[][]{{1.0}, {1.0}}; // FIXME these are test values
+    private final int numTests = desiredOutputs.length; // Number of tests this circuit will undergo
     private int generation = 0;
-    private Task[] tasks;
+    private Task[][] tasks; // [generation size] [number of tests per circuit]
 
     Trainer(int generationSize, int inputs, int[] layerSize, double mutationRate) {
         this.generationSize = generationSize;
         this.inputs = inputs;
         this.layerSize = layerSize;
         this.mutationRate = mutationRate;
-        circuitInputs = new double[generationSize][inputs];
-        tasks = new Task[generationSize];
+        circuitInputs = new double[generationSize][numTests][inputs];
+        tasks = new Task[generationSize][numTests];
     }
 
     /**
@@ -46,8 +48,10 @@ public abstract class Trainer implements Manager {
     }
 
     private void createTasks() {
-        for(int i = 0; i < generationSize; i++) {
-            tasks[i] = startCircuitTask(circuits[i], circuitInputs[i], "Task #" + i);
+        for(int i = 0; i < generationSize; i++) { // Current circuit
+            for(int j = 0; j < numTests; j++) { // Current task
+                tasks[i][j] = startCircuitTask(circuits[i], circuitInputs[i][j], "Task #" + i);
+            }
         }
     }
 
@@ -58,7 +62,11 @@ public abstract class Trainer implements Manager {
     private Circuit doGeneration() {
         createTasks();
         for(int i = 0; i < generationSize; i++) {
-            fitness[i] = evaluateFitness(tasks[i], circuitInputs[i]);
+            double sumFitness = 0;
+            for(int j = 0; j < numTests; j++) {
+                sumFitness += evaluateFitness(tasks[i][j], circuitInputs[i][j], desiredOutputs[j]);
+            }
+            fitness[i] = sumFitness / numTests;
         }
         int bestIndex = 0;
         for(int i = 0; i < generationSize; i++) {
@@ -75,18 +83,19 @@ public abstract class Trainer implements Manager {
      * May or may not use the given inputs.
      * 
      * @param task Task that contains a circuit (May not be completed)
-     * @param inputs
+     * @param inputs Array of inputs
+     * @param desiredOutput Matching outputs to the given inputs
      * @return Given fitness-- higher is better
      * @see Manager.readTask
      */
-    protected abstract double evaluateFitness(Task task, double[] inputs);
+    protected abstract double evaluateFitness(Task task, double[] inputs, double[] desiredOutput);
 
     /**
      * Define custom inputs for each circuit
      * 
      * @param circuitInputs Array which holds curcuit inputs which has yet to be filled
      */
-    protected abstract void fillInputs(double[][] circuitInputs);
+    protected abstract void fillInputs(double[][][] circuitInputs);
 
     protected void sentinelLoop() {
         Circuit bestLastGen = null;
