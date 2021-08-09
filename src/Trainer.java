@@ -20,6 +20,11 @@ public abstract class Trainer implements Manager {
         tasks = new Task[generationSize];
     }
 
+    /**
+     * Creates a new generation of circuits based on a parent circuit.
+     * If it is the first generation of the best circuit is null, will randomly generate new circuits
+     * @param bestCircuit Parent of new generation
+     */
     private void createCircuits(Circuit bestCircuit) {
         circuits = new Circuit[generationSize];
         fitness = new double[generationSize];
@@ -46,13 +51,14 @@ public abstract class Trainer implements Manager {
         }
     }
 
+    /**
+     * Processes each circuit through tasks, then determines the best performer
+     * @return Circuit with highest fitness
+     */
     private Circuit doGeneration() {
-        int maxTicks = 1;
-        for(int tick = 0; tick < maxTicks; tick++) {
-            createTasks();
-            for(int i = 0; i < generationSize; i++) {
-                fitness[i] = evaluateFitness(tasks[i], circuitInputs[i]);
-            }
+        createTasks();
+        for(int i = 0; i < generationSize; i++) {
+            fitness[i] = evaluateFitness(tasks[i], circuitInputs[i]);
         }
         int bestIndex = 0;
         for(int i = 0; i < generationSize; i++) {

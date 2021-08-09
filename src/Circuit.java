@@ -3,7 +3,7 @@ package src;
 public class Circuit{
 
     private String id; // Given when Node is created
-    public String mutations = "";
+    public String mutations = ""; // Record of mutations that have taken place
     private int[] layerSize;
     private Node[][] layers; // Node array that this curcuit consists of, includes the outputs but NOT inputs.
     private double[][] connectionStrength; // Array of doubles that each output is multiplied by. Includes inputs to next but no outputs. Each array length is previous node layer size * next node layer size
@@ -98,7 +98,6 @@ public class Circuit{
         this.connectionStrength = connectionStrength;
     }
 
-
     /**
      * Creates each node in the circuit and connects them.
      * Should only be called by the constructor.
@@ -153,19 +152,27 @@ public class Circuit{
         return outputs;
     }
 
+    /**
+     * Mutates this circuit
+     * @param mutationRate Rate at which circuit will mutate (0 = not at all, 1 = fully mutated)
+     */
     public synchronized void mutate(double mutationRate) {
+        if(mutationRate > 1) mutationRate = 1;
+        if(mutationRate < 0) mutationRate = 0;
         mutateConnections(mutationRate);
         mutateThresholds(mutationRate);
         createNodes();
     }
 
     /**
-     * 
-     * @param mutationRate Rate at which child will mutate
+     * Creates a cloned child, then mutates the child
+     * @param mutationRate Rate at which child will mutate (0 = not at all, 1 = fully mutated)
      * @param childID Name of the new child
      * @return Mutated child
      */
     public synchronized Circuit createMutatedChild(double mutationRate, String childID) {
+        if(mutationRate > 1) mutationRate = 1;
+        if(mutationRate < 0) mutationRate = 0;
         Circuit child = this.clone();
         child.mutate(mutationRate);
         child.setID(childID);
@@ -241,7 +248,9 @@ public class Circuit{
 
     @Override
     public Circuit clone(){
-        return new Circuit(inputs, layerSize.clone(), clone2DArray(thresholds), clone2DArray(connectionStrength), id);
+        Circuit clone = new Circuit(inputs, layerSize.clone(), clone2DArray(thresholds), clone2DArray(connectionStrength), id);
+        clone.mutations = this.mutations;
+        return clone;
     }
 
     public double[][] clone2DArray(double[][] arr) {

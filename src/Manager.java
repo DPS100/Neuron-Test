@@ -147,6 +147,13 @@ public interface Manager {
         return array; 
     }
 
+    /**
+     * Creates a task and starts it
+     * @param circuit Circuit to process
+     * @param inputs Current inputs
+     * @param threadName Name of the thread
+     * @return New and running thread
+     */
     public default Task startCircuitTask(Circuit circuit, double[] inputs, String threadName) {
         Task task = new Task(circuit, inputs);
         Thread thread = new Thread(task, threadName);
