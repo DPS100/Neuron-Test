@@ -24,11 +24,19 @@ public class Main extends Trainer {
     protected void fillInputs(double[][][] circuitInputs) {
         for(int i = 0; i < circuitInputs.length; i++) { // Current circuit
             for(int j = 0; j < circuitInputs[i].length; j++) { // Current task
+                /*
                 for(int k = 0; k < circuitInputs[i][j].length; k++) { // Current input
                     //FIXME test values
-                    if(k == 0) circuitInputs[i][j][k] = 0.1;
-                    else circuitInputs[i][j][k] = 1.0;
+                    if(j == 0) circuitInputs[i][j][k] = 1.0;
+                    else circuitInputs[i][j][k] = 0.9;
                 }
+                */
+                if(j == 0) {circuitInputs[i][j][0] = 1.0; circuitInputs[i][j][1] = 0.0;} // 1.0
+                if(j == 1) {circuitInputs[i][j][0] = 0.5; circuitInputs[i][j][1] = 0.0;} // 1.0
+                if(j == 2) {circuitInputs[i][j][0] = 0.1; circuitInputs[i][j][1] = 0.0;} // 1.0
+                if(j == 3) {circuitInputs[i][j][0] = 0.9; circuitInputs[i][j][1] = 1.0;} // 0.0
+                if(j == 4) {circuitInputs[i][j][0] = 0.4; circuitInputs[i][j][1] = 0.5;} // 0.0
+                if(j == 5) {circuitInputs[i][j][0] = 0.05; circuitInputs[i][j][1] = 0.1;} // 0.0
             }
         }
     }

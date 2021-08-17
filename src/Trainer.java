@@ -8,7 +8,7 @@ public abstract class Trainer implements Manager {
     public final int inputs;
     public final int[] layerSize;
     public final double mutationRate;
-    private final double[][] desiredOutputs = new double[][]{{1.0}, {1.0}}; // FIXME these are test values
+    private final double[][] desiredOutputs = new double[][]{{1.0}, {1.0}, {1.0}, {0.0}, {0.0}, {0.0}}; // FIXME these are test values
     private final int numTests = desiredOutputs.length; // Number of tests this circuit will undergo
     private int generation = 0;
     private Task[][] tasks; // [generation size] [number of tests per circuit]
