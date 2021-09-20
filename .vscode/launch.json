@@ -6,9 +6,18 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Launch Main",
+            "name": "Generate Networks",
             "request": "launch",
             "mainClass": "src.Main",
+            "args": "-g"
+        },
+
+        {
+            "type": "java",
+            "name": "Display Network",
+            "request": "launch",
+            "mainClass": "src.Main",
+            "args": "-d"
         }
     ]
 }

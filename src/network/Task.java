@@ -1,4 +1,4 @@
-package src;
+package src.network;
 
 public class Task implements Runnable{
 

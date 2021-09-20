@@ -1,4 +1,4 @@
-package src;
+package src.network;
 
 /**
  * Also referred to as a neuron, Nodes are objects that can process inputs and connect together to form an input

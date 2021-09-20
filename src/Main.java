@@ -1,5 +1,10 @@
 package src;
 
+import src.network.Task;
+import src.network.Trainer;
+import src.network.VisualManager;
+import src.scenarios.tictactoe.TicGame;
+
 public class Main extends Trainer {
 
     private Main(int generationSize, int inputs, int[] layerSize, double mutationRate) {
@@ -42,16 +47,28 @@ public class Main extends Trainer {
     }
     
     public static void main(String[] args) {
-        int generationSize = (int)Trainer.getDoubleFromUser("Enter the generation size: ");
-        int inputs = 2; System.out.println("Enter number of inputs (currently locked): 2");
-        int layers = (int)Trainer.getDoubleFromUser("Enter number of non-input layers (includes output): ");
-        double mutationRate = Trainer.getDoubleFromUser("Enter the mutation rate (between 0 and 1, 0 results in no mutations and 1 results in full mutations): ");
-        int[] layerSize = new int[layers];
-        for(int i = 0; i < layers - 1; i++) {
-            layerSize[i] = (int)Trainer.getDoubleFromUser("Enter layer " + (i + 1) + " size: ");
-        } layerSize[layers - 1] = 1; System.out.println("Enter layer " + layers + " size (currently locked): 1");
-        Main trainer = new Main(generationSize, inputs, layerSize, mutationRate);
-        trainer.sentinelLoop();
-        new VisualManager(true, "Generation " + (trainer.getGeneration() - 1));
+        TicGame game = new TicGame(null, null);
+        game.printBoard();
+        game.makeMove(0, 0);
+        game.printBoard();
+        game.makeMove(2, 2);
+        game.printBoard();
+        if(args[0].equals("generate") || args[0].equals("-g")) {
+            int generationSize = (int)Trainer.getDoubleFromUser("Enter the generation size: ");
+            int inputs = 2; System.out.println("Enter number of inputs (currently locked): 2");
+            int layers = (int)Trainer.getDoubleFromUser("Enter number of non-input layers (includes output): ");
+            double mutationRate = Trainer.getDoubleFromUser("Enter the mutation rate (between 0 and 1, 0 results in no mutations and 1 results in full mutations): ");
+            int[] layerSize = new int[layers];
+            for(int i = 0; i < layers - 1; i++) {
+                layerSize[i] = (int)Trainer.getDoubleFromUser("Enter layer " + (i + 1) + " size: ");
+            } layerSize[layers - 1] = 1; System.out.println("Enter layer " + layers + " size (currently locked): 1");
+            Main trainer = new Main(generationSize, inputs, layerSize, mutationRate);
+            trainer.sentinelLoop();
+            
+        } else if(args[0].equals("display") || args[0].equals("-d")) {
+            int generation = (int)Trainer.getDoubleFromUser("Enter target generation");
+            new VisualManager(true, "Generation " + generation);
+        }
+
     }
 }

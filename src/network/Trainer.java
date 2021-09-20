@@ -1,4 +1,4 @@
-package src;
+package src.network;
 
 public abstract class Trainer implements Manager {
     private Circuit[] circuits;
@@ -13,7 +13,7 @@ public abstract class Trainer implements Manager {
     private int generation = 0;
     private Task[][] tasks; // [generation size] [number of tests per circuit]
 
-    Trainer(int generationSize, int inputs, int[] layerSize, double mutationRate) {
+    protected Trainer(int generationSize, int inputs, int[] layerSize, double mutationRate) {
         this.generationSize = generationSize;
         this.inputs = inputs;
         this.layerSize = layerSize;

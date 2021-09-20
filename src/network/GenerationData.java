@@ -1,4 +1,4 @@
-package src;
+package src.network;
 
 public record GenerationData(int generation, double[] fitness, Circuit parent) {
     public double max() {
