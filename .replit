@@ -1,0 +1,2 @@
+language = "java15"
+run = "javac @options @classPaths && java -cp classes:lib/gson-2.8.6.jar: src.Main"

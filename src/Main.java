@@ -53,6 +53,10 @@ public class Main extends Trainer {
         game.printBoard();
         game.makeMove(2, 2);
         game.printBoard();
+				if(args.length == 0) {
+					args = new String [1];
+					args[0] = "-g";
+				}
         if(args[0].equals("generate") || args[0].equals("-g")) {
             int generationSize = (int)Trainer.getDoubleFromUser("Enter the generation size: ");
             int inputs = 2; System.out.println("Enter number of inputs (currently locked): 2");

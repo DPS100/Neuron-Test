@@ -1,0 +1,4 @@
+-d classes
+-g
+-sourcepath /home/runner/TemptingIdealisticDiscussions/classPaths
+-cp lib/gson-2.8.6.jar

@@ -17,7 +17,7 @@ public interface Manager {
      * @return If circuit has successfully been written
      */
     public default boolean writeCircuitToFile(String file, Circuit circuit) {
-        file = "Saved Circuits\\" + file + ".json";
+        file = "Saved Circuits/" + file + ".json";
         File newFile = new File(file);
         try {
             newFile.createNewFile();
@@ -67,7 +67,7 @@ public interface Manager {
     public default Circuit readCircuitFromFile(String file) {
         Gson gson = new Gson();
         try {
-            FileReader reader = new FileReader("Saved Circuits\\" + file + ".json");
+            FileReader reader = new FileReader("Saved Circuits/" + file + ".json");
             String json = "";
 
             int character;

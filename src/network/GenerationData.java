@@ -1,6 +1,27 @@
 package src.network;
 
-public record GenerationData(int generation, double[] fitness, Circuit parent) {
+public class GenerationData {
+		protected final int generation;
+		protected final double[] fitness;
+		protected final Circuit parent;
+		public GenerationData (int generation, double[] fitness, Circuit parent) {
+			this.generation = generation;
+			this.fitness = fitness;
+			this.parent = parent;
+		}
+
+		public int generation() {
+			return generation;
+		}
+
+		public double[] fitness() {
+			return fitness;
+		}
+
+		public Circuit parent() {
+			return parent;
+		}
+
     public double max() {
         double best = 0;
         for(double i : fitness) {
