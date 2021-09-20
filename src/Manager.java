@@ -22,7 +22,7 @@ public interface Manager {
         try {
             newFile.createNewFile();
         } catch (IOException e1) {
-            e1.printStackTrace();
+            //e1.printStackTrace();
             createPath(file);
         }
 
@@ -102,6 +102,40 @@ public interface Manager {
 
     }
 
+    /**
+     * Writes the current generation to a comma seperated value file. 
+     * @param genData The data for the current generation
+     */
+    public default void writeGenerationToCsv(GenerationData genData) {
+        File csv = new File("Circuit_Data.csv");
+        boolean isFirstGen = false;
+        if(genData.generation() == 0) { // Create .csv file
+            try {
+                csv.createNewFile();
+                isFirstGen = true;
+                System.out.println(".csv created");
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+        }
+
+        FileWriter fWriter;
+        try {
+            fWriter = new FileWriter(csv, !isFirstGen);
+            fWriter.append("\"Generation " + genData.generation() + "\",");
+            for(double i : genData.fitness()) {
+                fWriter.append("" + i + ',');
+            }
+            fWriter.append('\n');
+            fWriter.close();
+        } catch(IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        
+    }
+
     private void createPath(String file) {
         System.out.println("Could not find file. Creating new root folder");
             File newDir = new File("Saved Circuits");
@@ -121,11 +155,10 @@ public interface Manager {
             try {
                 if(newFile.createNewFile()) {
                     System.out.println("File creation succeeded");
-                } else {
-                    System.out.println("File creation failed");
                 }
-            } catch (Exception e2) {
+            } catch (IOException e2) {
                 e2.printStackTrace();
+                System.out.println("File creation failed");
             }
     }
 

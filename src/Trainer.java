@@ -113,7 +113,8 @@ public abstract class Trainer implements Manager {
                 createCircuits(bestLastGen);
                 fillInputs(circuitInputs);
                 bestLastGen = doGeneration();
-                this.writeCircuitToFile("Generation " + generation, bestLastGen);
+                writeCircuitToFile("Generation " + generation, bestLastGen);
+                writeGenerationToCsv(new GenerationData(i, fitness, bestLastGen));
                 generation++;
             }
         }
