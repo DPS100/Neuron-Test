@@ -4,30 +4,26 @@ import src.network.*;
 import src.scenarios.tictactoe.*;
 
 public class Main implements Manager{
+
+    public static boolean debug = true;
     
     public static void main(String[] args) {
-		if(args.length == 0) {
-			args = new String [1];
-			args[0] = "-g";
-		}
-        if(args[0].equals("generate") || args[0].equals("-g")) {
-            int generationSize = (int)Main.getDoubleFromUser("Enter the generation size: ");
-            int inputs = 9;
-			System.out.println("Enter number of inputs (currently locked): " + inputs);
-            int layers = (int)getDoubleFromUser("Enter number of non-input layers (includes output): ");
-            double mutationRate = getDoubleFromUser("Enter the mutation rate (between 0 and 1, 0 results in no mutations and 1 results in full mutations): ");
-            int[] layerSize = new int[layers];
-            for(int i = 0; i < layers - 1; i++) {
-                layerSize[i] = (int)getDoubleFromUser("Enter layer " + (i + 1) + " size: ");
-            } layerSize[layers - 1] = 1; System.out.println("Enter layer " + layers + " size (currently locked): 1");
-			TicTrainer t = new TicTrainer(generationSize, layerSize, mutationRate);
-			t.sentinelLoop();
-			
-            
-        } else if(args[0].equals("display") || args[0].equals("-d")) {
-            int generation = (int)getDoubleFromUser("Enter target generation");
-            new VisualManager(true, "Generation " + generation);
-        }
+
+        int generationSize = (int)Main.getDoubleFromUser("Enter the generation size: ");
+        int inputs = 9;
+        System.out.println("Enter number of inputs (currently locked): " + inputs);
+        int layers = (int)getDoubleFromUser("Enter number of non-input layers (includes output): ");
+        double mutationRate = getDoubleFromUser("Enter the mutation chance (between 0 and 1): ");
+        double mutationChance = getDoubleFromUser("Enter the mutation rate (Maximum change at which circuit could mutate; 0 = no change, 1 = no limit to change): ");
+        int[] layerSize = new int[layers];
+        for(int i = 0; i < layers - 1; i++) {
+            layerSize[i] = (int)getDoubleFromUser("Enter layer " + (i + 1) + " size: ");
+        } layerSize[layers - 1] = 9; System.out.println("Enter layer " + layers + " size (currently locked): 9");
+        TicTrainer t = new TicTrainer(generationSize, layerSize, mutationRate, mutationChance);
+        t.sentinelLoop();
+
+        int generation = t.getGeneration() - 1;
+        new VisualManager(true, "Generation " + generation);
     }
 
 	/**
@@ -53,5 +49,19 @@ public class Main implements Manager{
             }
         }
         return value;
+    }
+
+    public synchronized static void debugLog(String text) {
+        if(debug) {
+            System.out.println(text);
+        }
+    }
+
+    public synchronized static void debugLog(int text) {
+        debugLog("" + text);
+    }
+
+    public synchronized static void debugLog(double text) {
+        debugLog("" + text);
     }
 }

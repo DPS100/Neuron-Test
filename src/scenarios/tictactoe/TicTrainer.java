@@ -1,11 +1,12 @@
 package src.scenarios.tictactoe;
 
+import src.Main;
 import src.network.*;
 
 public class TicTrainer extends Trainer {
 
-	public TicTrainer(int generationSize, int[] layerSize, double mutationRate) {
-		super(generationSize, 9, layerSize, mutationRate);
+	public TicTrainer(int generationSize, int[] layerSize, double mutationRate, double mutationChance) {
+		super(generationSize, 9, layerSize, mutationRate, mutationChance);
 	}
 
 	protected Task[] createTasks(Circuit[] circuits) {
@@ -20,7 +21,7 @@ public class TicTrainer extends Trainer {
 			Circuit[] pair = new Circuit[2];
 			pair[0] = circuits[i*2];
 			pair[1] = circuits[i*2 + 1];
-			tasks[i] = new TicTask(pair);
+			tasks[i] = new TicTask(pair, this);
 			// Start thread
 			startCircuitTask(tasks[i], "TicGame " + i);
 		}
@@ -38,7 +39,5 @@ public class TicTrainer extends Trainer {
 			acc++;
 		}
 		return fitness;
-	}
-
-	
+	}	
 }

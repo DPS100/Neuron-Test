@@ -7,6 +7,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.event.MouseInputListener;
 
+import src.Main;
+
 import java.awt.Dimension;
 import java.awt.Color;
 
@@ -34,8 +36,8 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
 
     public void setupCircuit() {
         this.circuit = readCircuitFromFile(fileName);
-        circuitInputs = new double[]{1.0,1.0};
-        outputs = new double[circuit.process(circuitInputs).length];
+        circuitInputs = new double[circuit.getInputs()];
+        outputs = new double[circuit.getNumOutputs()];
     }
 
     private void setupGUI() {
@@ -51,6 +53,27 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
         frame.pack();
 
         repaint();
+        frame.toFront();
+        frame.requestFocus();
+        boolean keep = true;
+
+        while(keep) {
+            for(int i = 0; i < circuitInputs.length; i++) {
+                circuitInputs[i] = Main.getDoubleFromUser("Enter input " + i + ": ");
+            }
+            circuit.process(circuitInputs);
+            repaint();
+            int cont = 1;
+            try{
+                cont = Integer.valueOf(System.console().readLine("Enter 0 to continue, or a non-number to quit: "));
+                if(cont != 0) {
+                    keep = false;
+                }
+            } catch(Exception e) {
+                System.out.println("Simulation terminated.");
+                keep = false;
+            }
+        }
     }
 
     @Override
@@ -141,10 +164,12 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
     }
 
     public void mouseClicked(MouseEvent e) {
+        /* -- Legacy code
         mouseX = e.getX();
         mouseY = e.getY();
         circuitInputs = new double[]{(double)mouseX / this.getWidth(), (double)mouseY / this.getHeight()};
         repaint();
+        */
     }
 
     public void mousePressed(MouseEvent e) {}

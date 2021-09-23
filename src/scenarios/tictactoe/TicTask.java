@@ -3,8 +3,10 @@ package src.scenarios.tictactoe;
 import src.network.*;
 
 public class TicTask extends Task {
-	public TicTask(Circuit[] circuits) {
-		super(circuits);
+	private int currentMax;
+
+	public TicTask(Circuit[] circuits, Trainer myTrainer) {
+		super(circuits, myTrainer);
 	}
 
 	protected double[] calcFitness() {
@@ -21,6 +23,7 @@ public class TicTask extends Task {
 	private double[] playGame(Circuit c1, Circuit c2) {
 		TicGame game = new TicGame(c1.toString() + " v " + c2.toString());
 		int player = 1;
+		int moves = 1;
 		double[] gamescores = new double[2];
 		watch:
 		while(game.getWinner() == GameState.CONTINUE) {
@@ -32,22 +35,28 @@ public class TicTask extends Task {
 			if(penalty == 0 && gs == GameState.CONTINUE) {
 				player = 3 - player; // Alternate
 			} else if(gs == GameState.P1WIN) {
-				gamescores[0] = 1.0;
-				gamescores[1] = 0.75;
+				gamescores[0] = 2.0;
+				gamescores[1] = 1 + moves / 9;
 				break watch;
 			} else if(gs == GameState.P2WIN) {
-				gamescores[1] = 1.0;
-				gamescores[0] = 0.75;
+				gamescores[1] = 2.0;
+				gamescores[0] = 1 + moves / 9;
 				break watch;
 			} else if(gs == GameState.TIE) {
-				gamescores[0] = 0.7;
-				gamescores[1] = 0.7;
+				gamescores[0] = 1 + moves / 9;
+				gamescores[1] = 1 + moves / 9;
 				break watch;
 			} else { // Terminate game
-				gamescores[player - 1] = 1 - penalty;
-				gamescores[2 - player] = 0.5;
+				if(player == 1) {
+					gamescores[0] = 1 - penalty;
+					gamescores[1] = 1 + moves / 9;
+				} else {
+					gamescores[0] = 1 + moves / 9;
+					gamescores[1] = 1 - penalty;
+				}
 				break watch;
 			}
+			moves++;
 		}
 		return gamescores;
 	}
@@ -67,26 +76,18 @@ public class TicTask extends Task {
 				max = out;
 				maxPos = acc;
 			}
-			if(out < max && out > max2) out = max2;
+			if(out < max && out > max2) max2 = out;
 			acc++;
 		}
-		if(max >= 0.1) { // No outputs: Maximum penalty
-			System.out.println("No outputs");
-			return 1.0;
-		}
-		if(max - max2 > 0.4) { // Multiple outputs: Penalty is 1 - difference, max penalty 0.6
-			System.out.println("Multiple outputs");
-			return 1 - (max - max2);
+		if(max < 0.1) { // No outputs: 1 - max
+			return 1 - max;
 		}
 		int x = maxPos / 3;
 		int y = maxPos % 3;
 
 		if(!game.makeMove(x, y, player)) { // Invalid input: Penalty of 0.4
-			System.out.println("Invalid input");
 			return 0.4;
 		} else { // No penalties
-			game.printBoard();
-			System.out.println("^^^ No penalties ^^^");
 			return 0;
 		}
 	}

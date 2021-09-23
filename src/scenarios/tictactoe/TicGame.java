@@ -12,7 +12,6 @@ public class TicGame {
         board = new int[3][3];
 		this.name = name;
 		gamesMade++;
-		System.out.println("Creating new game# " + gamesMade);
     }
 
     /**
@@ -71,6 +70,7 @@ public class TicGame {
     }
 
     public void printBoard() {
+        System.out.print('\n');
 		System.out.println(name);
         for(int[] x : board) {
             System.out.print('\n');
@@ -78,7 +78,7 @@ public class TicGame {
                 System.out.print("" + '[' + y + ']');
             }
         }
-        System.out.print('\n');
+        
     }
 
     public double[] createInputs(int player) {

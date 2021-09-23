@@ -1,6 +1,10 @@
 package src.network;
 
+import java.util.Random;
+
 public class Circuit{
+
+    private Random generator = new Random(1234);
 
     private String id; // Given when Node is created
     public String mutations = ""; // Record of mutations that have taken place
@@ -154,13 +158,16 @@ public class Circuit{
 
     /**
      * Mutates this circuit
-     * @param mutationRate Rate at which circuit will mutate (0 = not at all, 1 = fully mutated)
+     * @param mutationChance Chance that circuit part will mutate
+     * @param mutationRate Maximum change at which circuit could mutate (0 = no change, 1 = no limit to change)
      */
-    public synchronized void mutate(double mutationRate) {
+    public synchronized void mutate(double mutationChance, double mutationRate) {
+        if(mutationChance > 1) mutationChance = 1;
+        if(mutationChance < 0) mutationChance = 0;
         if(mutationRate > 1) mutationRate = 1;
         if(mutationRate < 0) mutationRate = 0;
-        mutateConnections(mutationRate);
-        mutateThresholds(mutationRate);
+        mutateConnections(mutationChance, mutationRate);
+        mutateThresholds(mutationChance, mutationRate);
         createNodes();
     }
 
@@ -170,34 +177,50 @@ public class Circuit{
      * @param childID Name of the new child
      * @return Mutated child
      */
-    public synchronized Circuit createMutatedChild(double mutationRate, String childID) {
+    public synchronized Circuit createMutatedChild(double mutationChance, double mutationRate, String childID) {
         if(mutationRate > 1) mutationRate = 1;
         if(mutationRate < 0) mutationRate = 0;
         Circuit child = this.clone();
-        child.mutate(mutationRate);
+        child.mutate(mutationChance, mutationRate);
         child.setID(childID);
-		System.out.println("Created new child, ID: " + child.toString());
         return child;
     }
 
-    private void mutateConnections(double mutationRate) {
+    private void mutateConnections(double mutationChance, double mutationRate) {
         for(int x = 0; x < connectionStrength.length; x++) {
             for(int y = 0; y < connectionStrength[x].length; y++) {
-                if(Math.random() < mutationRate) {
-                    connectionStrength[x][y] = Math.random() * 2 - 1;
+                if(generator.nextDouble() < mutationChance) {
+                    //connectionStrength[x][y] = generateGaussianTransformed(3, 1.0/3.0, 0) * mutationRate; // from -1/1
+                    connectionStrength[x][y] = (Math.random() * 2 - 1) * mutationRate; // from -1/1
                 }
             }
         }
     }
 
-    private void mutateThresholds(double mutationRate) {
+    private void mutateThresholds(double mutationChance, double mutationRate) {
         for(int x = 0; x < thresholds.length; x++) {
             for(int y = 0; y < thresholds[x].length; y++) {
-                if(Math.random() < mutationRate) {
-                    thresholds[x][y] = Math.random();
+                if(generator.nextDouble() < mutationChance) {
+                    //thresholds[x][y] = generateGaussianTransformed(3, 1.0/6.0, 1) * mutationRate; // from 0/1
+                    thresholds[x][y] = Math.random() * mutationRate; // from 0/1
                 }
             }
         }
+    }
+
+    /**
+     * Returns a transformed and limited Gaussian value (A value of 3, 1/6, 1 will result in normal curve from 0-1)
+     * @param standardCuttoff How many standard deviations away to limit values to
+     * @param scaleFactor Scale of normal curve
+     * @param translation Offset of normal curve
+     */
+    private double generateGaussianTransformed(double standardCuttoff, double scaleFactor, double translation) {
+        double gaussian = generator.nextGaussian();
+        if(gaussian > standardCuttoff) gaussian = standardCuttoff;
+        else if(gaussian < -standardCuttoff) gaussian = -standardCuttoff;
+        gaussian *= scaleFactor;
+        gaussian += translation;
+        return gaussian;
     }
 
     /**
@@ -238,6 +261,10 @@ public class Circuit{
      */
     public int getInputs() {
         return inputs;
+    }
+
+    public int getNumOutputs() {
+        return layers[layers.length - 1].length;
     }
 
     /**

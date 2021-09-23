@@ -1,5 +1,7 @@
 package src.network;
 
+import src.Main;
+
 public abstract class Trainer implements Manager {
     private Circuit[] circuits;
     private double[] fitness;
@@ -8,14 +10,16 @@ public abstract class Trainer implements Manager {
     public final int[] layerSize;
 	public final int outputs;
     private double mutationRate;
+    private double mutationChance;
     private int generation;
 
-    protected Trainer(int generationSize, int inputs, int[] layerSize, double mutationRate) {
+    protected Trainer(int generationSize, int inputs, int[] layerSize, double mutationRate, double mutationChance) {
         this.generationSize = generationSize;
         this.inputs = inputs;
         this.layerSize = layerSize;
 		this.outputs = layerSize[layerSize.length - 1];
         this.mutationRate = mutationRate;
+        this.mutationChance = mutationChance;
 		this.generation = 0;
     }
 
@@ -33,9 +37,13 @@ public abstract class Trainer implements Manager {
 	 * @param threadName Name of the thread where the task will run
      */
     public void startCircuitTask(Task task, String threadName) {
-		System.out.println("Starting task " + threadName);
-        Thread thread = new Thread(task, threadName);
-        thread.start();
+        if(!Main.debug) {
+            Thread thread = new Thread(task, threadName);
+            thread.start();
+        } else {
+            task.run();
+        }
+        
     }
 
 	/**
@@ -55,15 +63,17 @@ public abstract class Trainer implements Manager {
     public double[] readTask(Task task) {
         double[] results = new double[0]; // May not work - dynamic size error
         int attempt = 1;
+        long sleepTimeMs = 1l;
         tryReadTask:
         while (attempt <= 10) {
             if(task.isFinished()) {
                 results = task.getFitness();
                 break tryReadTask;
             } else {
-                if(attempt != 1) System.out.println("Attempt #" + attempt + " waiting for circuit " + task.circuitNames()[0] +  " to process failed.");
+                if(attempt != 5) System.out.println("Attempt #" + attempt + " waiting for circuit " + task.circuitNames()[0] +  " to process failed.");
                 try {
-                    Thread.sleep(100l);
+                    Thread.sleep(sleepTimeMs);
+                    sleepTimeMs *= 2;
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
@@ -79,26 +89,19 @@ public abstract class Trainer implements Manager {
 
     /**
      * Creates a new generation of circuits based on a parent circuit.
-     * If it is the first generation of the best circuit is null, will randomly generate new circuits
      * @param bestCircuit Parent of new generation
      */
     private void createCircuits(Circuit bestCircuit) {
         circuits = new Circuit[generationSize];
         fitness = new double[generationSize];
-        if(generation == 0 || bestCircuit == null) { // First generation
-            for(int i = 0; i < generationSize; i++) {
-                circuits[i] = new Circuit(inputs, layerSize, ("#" + i + ", gen" + generation + ", mutations: Original"));
-            }
-        } else {
-            circuits[0] = bestCircuit;
-            for (int i = 1; i < generationSize; i++) {
-                // Copy best circuit, then mutate
-                circuits[i] = bestCircuit.createMutatedChild(mutationRate, ("#" + i + ", gen" + generation + ", mutations:"));
-                circuits[i].mutations = circuits[i].mutations + generation + " ";
-                circuits[i].setID(circuits[i].toString() + circuits[i].mutations);
-                // New random circuit
-                // circuits[i] = new Circuit(inputs, layerSize, ("#" + i + ", gen" + generation + ", mutations:"));
-            }
+        circuits[0] = bestCircuit;
+        for (int i = 1; i < generationSize; i++) {
+            // Copy best circuit, then mutate
+            circuits[i] = bestCircuit.createMutatedChild(mutationChance, mutationRate, ("#" + i + ", gen" + generation + ", mutations:"));
+            circuits[i].mutations = circuits[i].mutations + generation + " ";
+            circuits[i].setID(circuits[i].toString() + circuits[i].mutations);
+            // New random circuit
+            // circuits[i] = new Circuit(inputs, layerSize, ("#" + i + ", gen" + generation + ", mutations:"));
         }
     }
 
@@ -118,7 +121,7 @@ public abstract class Trainer implements Manager {
         return circuits[bestIndex];
     }
 
-    public void sentinelLoop() {
+    public int sentinelLoop() {
         Circuit bestLastGen = null;
         watch:
         while(true) {
@@ -131,13 +134,22 @@ public abstract class Trainer implements Manager {
             }
             for(int i = 0; i < generations; i++) {
                 System.out.println("Generation #" + generation);
-                createCircuits(bestLastGen);
+                if(getGeneration() != 0) {
+                    createCircuits(bestLastGen);
+                } else {
+                    circuits = new Circuit[generationSize];
+                    for(int j = 0; j < circuits.length; j++) {
+                        circuits[j] = new Circuit(inputs, layerSize, "#" + j + ", gen0");
+                    }
+                }
+                
                 bestLastGen = doGeneration();
                 writeCircuitToFile("Generation " + generation, bestLastGen);
                 writeGenerationToCsv(new GenerationData(i, fitness, bestLastGen));
                 generation++;
             }
         }
+        return getGeneration();
     }
 
     public int getGeneration() {

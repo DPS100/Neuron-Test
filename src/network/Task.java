@@ -6,13 +6,15 @@ public abstract class Task implements Runnable{
     private double[] fitness;
     private boolean finished = false;
     private String[] circuitNames;
+    private Trainer myTrainer;
     
-    protected Task(Circuit[] circuits) {
+    protected Task(Circuit[] circuits, Trainer myTrainer) {
         this.circuits = circuits;
 		this.circuitNames = new String[circuits.length];
 		for(int i = 0; i < circuits.length; i++) {
 			circuitNames[i] = circuits[i].toString();
 		}
+        this.myTrainer = myTrainer;
     }
 
     @Override
@@ -28,7 +30,7 @@ public abstract class Task implements Runnable{
      * @return fitness of the circuit (MAY BE NULL)
      */
     public double[] getFitness() {
-        return calcFitness();
+        return fitness;
     }
 
 	/**
