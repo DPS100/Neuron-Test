@@ -1,44 +1,51 @@
 package src.network;
 
-public class Task implements Runnable{
+public abstract class Task implements Runnable{
 
-    private Circuit circuit;
-    private double[] inputValues;
-    private double[] outputs;
+    protected Circuit[] circuits;
+    private double[] fitness;
     private boolean finished = false;
-    private String circuitName;
+    private String[] circuitNames;
     
-    Task(Circuit circuit, double[] inputValues) {
-        this.circuit = circuit;
-        this.inputValues = inputValues;
-        this.circuitName = circuit.toString();
+    protected Task(Circuit[] circuits) {
+        this.circuits = circuits;
+		this.circuitNames = new String[circuits.length];
+		for(int i = 0; i < circuits.length; i++) {
+			circuitNames[i] = circuits[i].toString();
+		}
     }
 
     @Override
     public void run() {
-        try{
-            outputs = circuit.process(inputValues);
-            finished = true;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+		fitness = calcFitness();
+		finished = true;
     }
 
     /**
-     * This should return the results of the circuit.
+     * This should return the fitness of the circuits.
      * WARNING: outputs may be null as the circuit has not finished processing.
      * I would recommend trying another task, or waiting for this one to finish.
-     * @return results of the circuit
+     * @return fitness of the circuit (MAY BE NULL)
      */
-    public double[] getResults() {
-        return outputs;
+    public double[] getFitness() {
+        return calcFitness();
     }
+
+	/**
+	 * This will be called by @see Task.run()
+	 * Circuits should process thier values and be graded accordingly here.
+	*/
+	protected abstract double[] calcFitness();
 
     public boolean isFinished() {
         return finished;
     }
 
-    public String circuitName() {
-        return circuitName;
+    public String[] circuitNames() {
+        return circuitNames;
     }
+
+	public Circuit[] getCircuits() {
+		return circuits;
+	}
 }

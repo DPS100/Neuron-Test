@@ -176,6 +176,7 @@ public class Circuit{
         Circuit child = this.clone();
         child.mutate(mutationRate);
         child.setID(childID);
+		System.out.println("Created new child, ID: " + child.toString());
         return child;
     }
 

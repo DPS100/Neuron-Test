@@ -1,37 +1,28 @@
 package src.scenarios.tictactoe;
 
-import src.network.Circuit;
-import src.network.Task;
-import src.network.TrainingTypes.*;
+import src.network.*;
 
-public class TicGame extends AdversarialMultirun {
+public class TicGame {
     private int[][] board;
     private int playerMove = 1;
-    public Circuit player1;
-    public Circuit player2;
+	private String name;
+	private static int gamesMade = 0;
 
-    /* Game board:
-     x   0 1 2
-    y  0
-       1
-       2
-
-    */
-
-    public TicGame(Circuit player1, Circuit player2) {
-        super(9, 9, 2);
+    public TicGame(String name) {
         board = new int[3][3];
-        this.player1 = player1;
-        this.player2 = player2;
+		this.name = name;
+		gamesMade++;
+		System.out.println("Creating new game# " + gamesMade);
     }
 
     /**
      * Attempts to make a move for the current player (Alternates the current player)
      * @param x X-coordinate
      * @param y Y-coordinate
+	 * @param playerMove Player that moved
      * @return If move was legal
      */
-    public boolean makeMove(int x, int y) {
+    public boolean makeMove(int x, int y, int playerMove) {
         if(x > 2 || y > 2 || x < 0 || y < 0) { // Out of bounds
             return false;
         }
@@ -39,48 +30,29 @@ public class TicGame extends AdversarialMultirun {
             return false;
         }
 
+		this.playerMove = playerMove;
         board[x][y] = playerMove;
-        playerMove = 3 - playerMove; // Alternate player
         return true;
     }
 
     /**
      * @return -1 for continuing game, 0 for tie, 1 for p1, 2 for p2 
      */
-    public int checkWin() {
+    private int checkWin() {
         // Horizontal win
         for(int[] x : board) {
-            int acc = 0;
-            for(int y : x) {
-                acc += y;
-            }
-            if(acc / 3 == 1) return 1;
-            if(acc / 3 == 2) return 2;
+			int num = 0;
+            if(x[0] == playerMove && x[0] == x[1] && x[1] == x[2]) return playerMove;
         }
 
         // Vertical win
         for(int y = 0; y < 3; y++) {
-            int acc = 0;
-            for(int[] x : board) {
-                acc += x[y];
-            }
-            if(acc / 3 == 1) return 1;
-            if(acc / 3 == 2) return 2;
+            if(board[0][y] == playerMove && board[0][y] == board[1][y] && board[1][y] == board[2][y]) return playerMove;
         }
 
         // Diagonal win
-        for(int xy = 0; xy < 3; xy++) {
-            int acc = 0;
-            int invertAcc = 0;
-            for(int i = 0; i < 3; i++) {
-                acc += board[xy][xy];
-                invertAcc += board[xy][2-xy];
-            }
-            if(acc / 3 == 1) return 1;
-            if(acc / 3 == 2) return 2;
-            if(invertAcc / 3 == 1) return 1;
-            if(invertAcc / 3 == 2) return 2;
-        }
+    	if(board[0][0] == playerMove && board[0][0] == board[1][1] && board[1][1] == board[2][2]) return playerMove;
+		if(board[0][2] == playerMove && board[0][2] == board[1][1] && board[1][1] == board[2][0]) return playerMove;
 
         // Is game still being played?
         boolean zeroFlag = false;
@@ -99,6 +71,7 @@ public class TicGame extends AdversarialMultirun {
     }
 
     public void printBoard() {
+		System.out.println(name);
         for(int[] x : board) {
             System.out.print('\n');
             for(int y : x) {
@@ -108,53 +81,40 @@ public class TicGame extends AdversarialMultirun {
         System.out.print('\n');
     }
 
-    public double[] createInputs() {
+    public double[] createInputs(int player) {
         double[] inputs = new double[9];
         int acc = 0;
         for(int[] x : board) {
             for(int y : x) {
-                inputs[acc] = y;
+				double out = 0; // Low (enemy)
+				if(y == 0) out = 0.5; // Neutral
+				else if(y == player) out = 1; // High (player)
+                inputs[acc] = out;
                 acc++;
             }
         }
         return inputs;
     }
 
-    /**
-     * Returns -1 to continue game, 0 for no outputs, 0.2 for multiple outputs, and 0.25 for an invalid input
-     * @param output Array containing the circuit output
-     * @return -1 to continue, a valid fitness to quit
-     */
-    public double processOutput(double[] output) {
-        double max = output[0];
-        int maxLocation = 0;
-        double max2 = 0;
-
-        for(int x = 0; x < output.length; x++) {
-            if(output[x] > max) {
-                max2 = max;
-                max = output[x];
-            }
-        }
-        if(max < 0.5) return 0; // Penalize no outputs (Max score = 0)
-        if(max - max2 <= 0.4) return (max - max2) / 2; // Penalize multiple outputs (If difference is less than/equals 0.4) (Max score = 0.2)
-        int x = maxLocation / 3;
-        int y = maxLocation % 3;
-        if(!makeMove(x, y)) return 0.3;// Penalize invalid input
-
-        return -1;
-    }
-
-    @Override
-    protected double[] getFitnessFromCircuits(Circuit[] circuits) {
-        Task current;
-        double[] scores = {-1,-1};
-        while(checkWin() == -1 && scores[0] == -1 && scores[2] == -1) {
-            current = this.startCircuitTask(circuits[playerMove - 1], createInputs(), "Tic Tac Toe player " + (playerMove + 1));
-            scores[playerMove - 1] = processOutput(current.getResults());
-        }
-        if(scores[0] == -1) scores[0] = 0;
-        if(scores[1] == -1) scores[1] = 0;
-        return scores;
-    }
+	public GameState getWinner() {
+		int winner = checkWin();
+		GameState s = GameState.ERROR;
+		switch(winner) {
+			case 1:
+				s = GameState.P1WIN;
+				break;
+			case 2:
+				s = GameState.P2WIN;
+				break;
+			case 0:
+				s = GameState.TIE;
+				break;
+			case -1:
+				s = GameState.CONTINUE;
+				break;
+			default:
+				break;
+		}
+		return s;
+	}
 }

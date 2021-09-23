@@ -2,24 +2,79 @@ package src.network;
 
 public abstract class Trainer implements Manager {
     private Circuit[] circuits;
-    private double[][][] circuitInputs; // [generation size] [number of tests per circuit] [number of inputs per test]
     private double[] fitness;
     public final int generationSize;
     public final int inputs;
     public final int[] layerSize;
-    public final double mutationRate;
-    private final double[][] desiredOutputs = new double[][]{{1.0}, {1.0}, {1.0}, {0.0}, {0.0}, {0.0}}; // FIXME these are test values
-    private final int numTests = desiredOutputs.length; // Number of tests this circuit will undergo
-    private int generation = 0;
-    private Task[][] tasks; // [generation size] [number of tests per circuit]
+	public final int outputs;
+    private double mutationRate;
+    private int generation;
 
     protected Trainer(int generationSize, int inputs, int[] layerSize, double mutationRate) {
         this.generationSize = generationSize;
         this.inputs = inputs;
         this.layerSize = layerSize;
+		this.outputs = layerSize[layerSize.length - 1];
         this.mutationRate = mutationRate;
-        circuitInputs = new double[generationSize][numTests][inputs];
-        tasks = new Task[generationSize][numTests];
+		this.generation = 0;
+    }
+
+	/**
+	 * Creates and starts off a task array, and returns that started task array
+	 * @param circuits Array of circuits that will be started in the tasks
+	 * @return Started task array
+	 * @see Trainer.startCircuitTask
+	 */
+    protected abstract Task[] createTasks(Circuit[] circuits);
+
+	/**
+     * Creates a task and starts it
+     * @param task Task to start
+	 * @param threadName Name of the thread where the task will run
+     */
+    public void startCircuitTask(Task task, String threadName) {
+		System.out.println("Starting task " + threadName);
+        Thread thread = new Thread(task, threadName);
+        thread.start();
+    }
+
+	/**
+     * Given a task array, invoice the fitness using the tasks
+     * 
+     * @param task Task[] that contains a circuit[s] (May not be completed)
+     * @return Given fitness array -- higher is better
+     */
+    protected abstract double[] populateFitness(Task[] tasks);
+
+	/**
+     * Attempt to read a task- has incompleted circuit protections
+     * 
+     * @param task Task that may or may not contain a completed circuit
+     * @return Circuit fitness
+     */
+    public double[] readTask(Task task) {
+        double[] results = new double[0]; // May not work - dynamic size error
+        int attempt = 1;
+        tryReadTask:
+        while (attempt <= 10) {
+            if(task.isFinished()) {
+                results = task.getFitness();
+                break tryReadTask;
+            } else {
+                if(attempt != 1) System.out.println("Attempt #" + attempt + " waiting for circuit " + task.circuitNames()[0] +  " to process failed.");
+                try {
+                    Thread.sleep(100l);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            }
+            attempt++;
+        }
+        if(attempt >= 11) {
+            System.out.println("Circuit proccess failed.");
+            System.exit(1);
+        }
+        return results;
     }
 
     /**
@@ -47,27 +102,12 @@ public abstract class Trainer implements Manager {
         }
     }
 
-    private void createTasks() {
-        for(int i = 0; i < generationSize; i++) { // Current circuit
-            for(int j = 0; j < numTests; j++) { // Current task
-                tasks[i][j] = startCircuitTask(circuits[i], circuitInputs[i][j], "Task #" + i);
-            }
-        }
-    }
-
     /**
      * Processes each circuit through tasks, then determines the best performer
      * @return Circuit with highest fitness
      */
     private Circuit doGeneration() {
-        createTasks();
-        for(int i = 0; i < generationSize; i++) {
-            double sumFitness = 0;
-            for(int j = 0; j < numTests; j++) {
-                sumFitness += evaluateFitness(tasks[i][j], circuitInputs[i][j], desiredOutputs[j]);
-            }
-            fitness[i] = sumFitness / numTests;
-        }
+		fitness = populateFitness(createTasks(circuits));
         int bestIndex = 0;
         for(int i = 0; i < generationSize; i++) {
             if(fitness[i] > fitness[bestIndex]) {
@@ -78,26 +118,7 @@ public abstract class Trainer implements Manager {
         return circuits[bestIndex];
     }
 
-    /**
-     * Given a task, rate how well the member circuit performed.
-     * May or may not use the given inputs.
-     * 
-     * @param task Task that contains a circuit (May not be completed)
-     * @param inputs Array of inputs
-     * @param desiredOutput Matching outputs to the given inputs
-     * @return Given fitness-- higher is better
-     * @see Manager.readTask
-     */
-    protected abstract double evaluateFitness(Task task, double[] inputs, double[] desiredOutput);
-
-    /**
-     * Define custom inputs for each circuit
-     * 
-     * @param circuitInputs Array which holds curcuit inputs which has yet to be filled
-     */
-    protected abstract void fillInputs(double[][][] circuitInputs);
-
-    protected void sentinelLoop() {
+    public void sentinelLoop() {
         Circuit bestLastGen = null;
         watch:
         while(true) {
@@ -111,7 +132,6 @@ public abstract class Trainer implements Manager {
             for(int i = 0; i < generations; i++) {
                 System.out.println("Generation #" + generation);
                 createCircuits(bestLastGen);
-                fillInputs(circuitInputs);
                 bestLastGen = doGeneration();
                 writeCircuitToFile("Generation " + generation, bestLastGen);
                 writeGenerationToCsv(new GenerationData(i, fitness, bestLastGen));
@@ -120,32 +140,15 @@ public abstract class Trainer implements Manager {
         }
     }
 
-    /**
-     * Attempt to get user to enter a double. Will end the program on unknown error, 
-     * but handle uncastable string by prompting user again.
-     * 
-     * @param text Question to prompt the user with
-     * @return User answer in double form
-     */
-    public static double getDoubleFromUser(String text) {
-        double value = 0.0;
-        boolean valid = false;
-        while(!valid) {
-            try {
-                value = Double.parseDouble(System.console().readLine(text));
-                valid = true;
-            } catch(NumberFormatException e) {
-                System.out.println("Could not cast input to double. Please try again.");
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("An unknown error occurred. Terminating program.");
-                System.exit(1);
-            }
-        }
-        return value;
-    }
-
     public int getGeneration() {
         return generation;
     }
+
+	public Circuit[] getCircuits() {
+		return circuits;
+	}
+
+	private double[] getFitness() {
+		return fitness;
+	}
 }

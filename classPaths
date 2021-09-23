@@ -1,7 +1,3 @@
-src/network/TrainingTypes/AdversarialMultirun.java
-src/network/TrainingTypes/AdversarialSinglerun.java
-src/network/TrainingTypes/IndividualMultirun.java
-src/network/TrainingTypes/IndividualSinglerun.java
 src/network/Circuit.java
 src/network/GenerationData.java
 src/network/Manager.java
@@ -10,4 +6,7 @@ src/network/Task.java
 src/network/Trainer.java
 src/network/VisualManager.java
 src/scenarios/tictactoe/TicGame.java
+src/scenarios/tictactoe/TicTask.java
+src/scenarios/tictactoe/TicTrainer.java
+src/scenarios/tictactoe/GameState.java
 src/Main.java
