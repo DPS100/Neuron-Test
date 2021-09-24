@@ -37,7 +37,9 @@ public abstract class Trainer implements Manager {
 	 * @param threadName Name of the thread where the task will run
      */
     public void startCircuitTask(Task task, String threadName) {
-        if(!Main.debug) {
+		// TODO running too many threads makes the program very slow, need to delegate
+		// certain # of circuits per avalible CPU core
+        if(Main.runMultiThreaded) {
             Thread thread = new Thread(task, threadName);
             thread.start();
         } else {
@@ -61,7 +63,7 @@ public abstract class Trainer implements Manager {
      * @return Circuit fitness
      */
     public double[] readTask(Task task) {
-        double[] results = new double[0]; // May not work - dynamic size error
+        double[] results = null;
         int attempt = 1;
         long sleepTimeMs = 1l;
         tryReadTask:
@@ -92,8 +94,8 @@ public abstract class Trainer implements Manager {
      * @param bestCircuit Parent of new generation
      */
     private void createCircuits(Circuit bestCircuit) {
+		Main.debugLog("Creating new generation from " + bestCircuit.toString());
         circuits = new Circuit[generationSize];
-        fitness = new double[generationSize];
         circuits[0] = bestCircuit;
         for (int i = 1; i < generationSize; i++) {
             // Copy best circuit, then mutate
@@ -105,24 +107,56 @@ public abstract class Trainer implements Manager {
         }
     }
 
+	/** 
+	 * Mutates every circuit with the exception of the first circuit.
+	 */
+	private void mutateCircuits(int bestIndex) {
+		
+		for(int i = 0; i < circuits.length; i++) {
+			if(i != bestIndex) {
+				circuits[i] = circuits[i].createMutatedChild(mutationChance, mutationRate, ("#" + i + ", gen" + generation + ", mutations:"));
+				circuits[i].mutations = circuits[i].mutations + generation + " ";
+			}
+		}
+	}
+
     /**
      * Processes each circuit through tasks, then determines the best performer
-     * @return Circuit with highest fitness
+     * @return index with highest fitness
      */
-    private Circuit doGeneration() {
+    private int doGeneration(int bestLastGen) {
+		double bestLastFitness;
+		Main.debugLog("Best last at " + bestLastGen);
+		if(bestLastGen == -1) { // Gen 0
+			bestLastFitness = 0;
+		} else {
+			bestLastFitness = fitness[bestLastGen];
+			Main.debugLog("Best last is " + bestLastFitness);
+		}
+		int bestIndex = 0;
 		fitness = populateFitness(createTasks(circuits));
-        int bestIndex = 0;
-        for(int i = 0; i < generationSize; i++) {
-            if(fitness[i] > fitness[bestIndex]) {
-                bestIndex = i;
-            }
-        }
-        System.out.println("Best fitness: " + fitness[bestIndex] + " ID: "+ circuits[bestIndex].toString());
-        return circuits[bestIndex];
+
+		for(int i = 0; i < generationSize; i++) {
+			if(fitness[i] > fitness[bestIndex]) {
+				bestIndex = i;
+				Main.debugLog("Best fitness found:  " + fitness[i]);
+			}
+		}
+
+		Main.debugLog("Bestlast fitness: " + bestLastFitness + " Found best fitness: " + fitness[bestIndex] + " at " + bestIndex);
+		
+		if(bestLastFitness < fitness[bestIndex]) { // This gen did better than last
+			System.out.println("Best fitness: " + fitness[bestIndex] + " ID: "+ circuits[bestIndex].toString());
+			createCircuits(circuits[bestIndex]);
+		} else { // Let current gen keep changing
+			System.out.println("Fitness stagnant: " + fitness[bestIndex] + " ID: "+ circuits[bestIndex].toString());
+			mutateCircuits(bestIndex);
+		}
+        return bestIndex;
     }
 
     public int sentinelLoop() {
-        Circuit bestLastGen = null;
+        int bestLastGen = -1;
         watch:
         while(true) {
             int generations;
@@ -134,18 +168,18 @@ public abstract class Trainer implements Manager {
             }
             for(int i = 0; i < generations; i++) {
                 System.out.println("Generation #" + generation);
-                if(getGeneration() != 0) {
-                    createCircuits(bestLastGen);
-                } else {
+                if(getGeneration() == 0) {
                     circuits = new Circuit[generationSize];
                     for(int j = 0; j < circuits.length; j++) {
                         circuits[j] = new Circuit(inputs, layerSize, "#" + j + ", gen0");
+						Main.debugLog("Created " + j);
                     }
                 }
                 
-                bestLastGen = doGeneration();
-                writeCircuitToFile("Generation " + generation, bestLastGen);
-                writeGenerationToCsv(new GenerationData(i, fitness, bestLastGen));
+                bestLastGen = doGeneration(bestLastGen);
+				Main.debugLog("Best index returned as " + bestLastGen);
+                writeCircuitToFile("Generation " + generation, circuits[bestLastGen]);
+                writeGenerationToCsv(new GenerationData(i, fitness, circuits[bestLastGen]));
                 generation++;
             }
         }

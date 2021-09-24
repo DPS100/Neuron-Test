@@ -74,6 +74,9 @@ public class VisualManager extends JPanel implements MouseInputListener, Manager
                 keep = false;
             }
         }
+
+		frame.setVisible(false);
+		frame.dispose();
     }
 
     @Override

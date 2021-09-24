@@ -5,7 +5,8 @@ import src.scenarios.tictactoe.*;
 
 public class Main implements Manager{
 
-    public static boolean debug = true;
+    public static boolean debug = false;
+	public static boolean runMultiThreaded = false;
     
     public static void main(String[] args) {
 
@@ -53,7 +54,7 @@ public class Main implements Manager{
 
     public synchronized static void debugLog(String text) {
         if(debug) {
-            System.out.println(text);
+            System.out.println("(DEBUG) " + text);
         }
     }
 
