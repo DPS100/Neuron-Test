@@ -8,20 +8,18 @@ public class Circuit{
     private static Random generator = new Random(1234);
 
     private String id; // Given when Node is created
-    private int[] layerSize;
-    private double[][] connectionStrength; // Array of doubles that each output is multiplied by. Includes inputs to next but no outputs. Each array length is previous node layer size * next node layer size
-    private double[][] thresholds; // The net threshold each node must pass to become active.
+    private int[] layerSizes; // Sizes of each layer{layer 0 size, layer 1 size, ..., layer n size}
+    private double[][][] weights; // Array of doubles that each output is multiplied by. [layers][nodes in layer][nodes in previous layer]
+    private double[][] biases; // The net threshold each node must pass to become active. [layers][nodes in layer]
 
     /**
      * This constructor needs manual values, and will not generate it's own.
      * A circuit consists of one "artificial" layer made up of inputs,
      * and specified layer sizes that make up normal layers (includes the output nodes).
-     * @param inputs Number of inputs
      * @param layerSize The size of each layer (Must have at least one value)
      */
-    Circuit(int inputs, int[] layerSize, double[][] thresholds, double[][] connectionStrength, String id) {
-        this.inputs = inputs;
-        this.layerSize = layerSize;
+    Circuit(int[] layerSizes, double[][] thresholds, double[][] connectionStrength, String id) {
+        this.layerSizes = layerSizes;
         setupDefaultValues(layerSize);
 
         this.thresholds = thresholds;
