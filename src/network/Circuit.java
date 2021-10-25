@@ -5,14 +5,12 @@ import src.*;
 
 public class Circuit{
 
-    private Random generator = new Random(1234);
+    private static Random generator = new Random(1234);
 
     private String id; // Given when Node is created
     private int[] layerSize;
-    private Node[][] layers; // Node array that this curcuit consists of, includes the outputs but NOT inputs.
     private double[][] connectionStrength; // Array of doubles that each output is multiplied by. Includes inputs to next but no outputs. Each array length is previous node layer size * next node layer size
     private double[][] thresholds; // The net threshold each node must pass to become active.
-    private final int inputs; // Number of input nodes (Not included in the layer 2d array).
 
     /**
      * This constructor needs manual values, and will not generate it's own.
