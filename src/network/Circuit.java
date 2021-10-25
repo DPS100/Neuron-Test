@@ -1,13 +1,13 @@
 package src.network;
 
 import java.util.Random;
+import src.*;
 
 public class Circuit{
 
     private Random generator = new Random(1234);
 
     private String id; // Given when Node is created
-    public String mutations = ""; // Record of mutations that have taken place
     private int[] layerSize;
     private Node[][] layers; // Node array that this curcuit consists of, includes the outputs but NOT inputs.
     private double[][] connectionStrength; // Array of doubles that each output is multiplied by. Includes inputs to next but no outputs. Each array length is previous node layer size * next node layer size
@@ -162,6 +162,7 @@ public class Circuit{
      * @param mutationRate Maximum change at which circuit could mutate (0 = no change, 1 = no limit to change)
      */
     public synchronized void mutate(double mutationChance, double mutationRate) {
+		Main.debugLog("Mutating " + this.toString());
         if(mutationChance > 1) mutationChance = 1;
         if(mutationChance < 0) mutationChance = 0;
         if(mutationRate > 1) mutationRate = 1;
@@ -181,31 +182,40 @@ public class Circuit{
         if(mutationRate > 1) mutationRate = 1;
         if(mutationRate < 0) mutationRate = 0;
         Circuit child = this.clone();
+		child.setID(childID);
         child.mutate(mutationChance, mutationRate);
-        child.setID(childID);
         return child;
     }
 
     private void mutateConnections(double mutationChance, double mutationRate) {
         for(int x = 0; x < connectionStrength.length; x++) {
             for(int y = 0; y < connectionStrength[x].length; y++) {
-                if(generator.nextDouble() < mutationChance) {
+                if(Math.random() < mutationChance) {
                     //connectionStrength[x][y] = generateGaussianTransformed(3, 1.0/3.0, 0) * mutationRate; // from -1/1
-                    connectionStrength[x][y] = (Math.random() * 2 - 1) * mutationRate; // from -1/1
+                    //connectionStrength[x][y] = (Math.random() * 2 - 1) * mutationRate; // from -1/1
+					connectionStrength[x][y] = connectionStrength[x][y] + (Math.random() * 2 - 1) * mutationRate;
+					// Changes +/- (1 * mutationRate)
+					//Main.debugLog("Generated " )
                 }
             }
         }
+		//Main.debugLog(connectionStrength[0][0]);
     }
 
     private void mutateThresholds(double mutationChance, double mutationRate) {
         for(int x = 0; x < thresholds.length; x++) {
             for(int y = 0; y < thresholds[x].length; y++) {
-                if(generator.nextDouble() < mutationChance) {
+                if(Math.random() < mutationChance) {
                     //thresholds[x][y] = generateGaussianTransformed(3, 1.0/6.0, 1) * mutationRate; // from 0/1
-                    thresholds[x][y] = Math.random() * mutationRate; // from 0/1
+                    //thresholds[x][y] = Math.random() * mutationRate; // from 0/1
+					double change = (Math.random() * 2 - 1) * mutationRate;
+					Main.debugLog("Changing " + this.toString() + " by " + change);
+					thresholds[x][y] = thresholds[x][y] + change;
+					// Changes +/- (1 * mutationRate)
                 }
             }
         }
+		//Main.debugLog(thresholds[0][0]);
     }
 
     /**
@@ -277,7 +287,6 @@ public class Circuit{
     @Override
     public Circuit clone(){
         Circuit clone = new Circuit(inputs, layerSize.clone(), clone2DArray(thresholds), clone2DArray(connectionStrength), id);
-        clone.mutations = this.mutations;
         return clone;
     }
 

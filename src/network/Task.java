@@ -2,18 +2,13 @@ package src.network;
 
 public abstract class Task implements Runnable{
 
-    protected Circuit[] circuits;
-    private double[] fitness;
+    protected Circuit circuit;
+    private double fitness;
     private boolean finished = false;
-    private String[] circuitNames;
     private Trainer myTrainer;
     
-    protected Task(Circuit[] circuits, Trainer myTrainer) {
-        this.circuits = circuits;
-		this.circuitNames = new String[circuits.length];
-		for(int i = 0; i < circuits.length; i++) {
-			circuitNames[i] = circuits[i].toString();
-		}
+    protected Task(Circuit circuit, Trainer myTrainer) {
+        this.circuit = circuit;
         this.myTrainer = myTrainer;
     }
 
@@ -29,7 +24,7 @@ public abstract class Task implements Runnable{
      * I would recommend trying another task, or waiting for this one to finish.
      * @return fitness of the circuit (MAY BE NULL)
      */
-    public double[] getFitness() {
+    public double getFitness() {
         return fitness;
     }
 
@@ -37,17 +32,13 @@ public abstract class Task implements Runnable{
 	 * This will be called by @see Task.run()
 	 * Circuits should process thier values and be graded accordingly here.
 	*/
-	protected abstract double[] calcFitness();
+	protected abstract double calcFitness();
 
     public boolean isFinished() {
         return finished;
     }
 
-    public String[] circuitNames() {
-        return circuitNames;
-    }
-
-	public Circuit[] getCircuits() {
-		return circuits;
+	public Circuit getCircuit() {
+		return circuit;
 	}
 }

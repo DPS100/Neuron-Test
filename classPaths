@@ -9,4 +9,6 @@ src/scenarios/tictactoe/TicGame.java
 src/scenarios/tictactoe/TicTask.java
 src/scenarios/tictactoe/TicTrainer.java
 src/scenarios/tictactoe/GameState.java
+src/scenarios/maxOutput/outputTask.java
+src/scenarios/maxOutput/outputTrainer.java
 src/Main.java

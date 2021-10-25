@@ -4,19 +4,17 @@ import src.network.*;
 
 public class TicTask extends Task {
 	private int currentMax;
+	private Circuit opponent;
 
-	public TicTask(Circuit[] circuits, Trainer myTrainer) {
-		super(circuits, myTrainer);
+	public TicTask(Circuit circuit, Trainer myTrainer, Circuit opponent) {
+		super(circuit, myTrainer);
+		this.opponent = opponent;
 	}
 
-	protected double[] calcFitness() {
-		double[] game1scores = playGame(circuits[0], circuits[1]);
-		double[] game2scores = playGame(circuits[1], circuits[0]);
-		// Reverse game2 scores
-		double temp = game2scores[0];
-		game2scores[0] = game2scores[1];
-		game2scores[1] = temp;
-		double[] avgScores = {(game1scores[0] + game2scores[0]) / 2, (game1scores[1] + game2scores[1]) / 2};
+	protected double calcFitness() {
+		double game1score = playGame(circuit, opponent)[0];
+		double game2score = playGame(opponent, circuit)[1];
+		double avgScores = (game1score + game2score) / 2;
 		return avgScores;
 	}
 
@@ -25,6 +23,7 @@ public class TicTask extends Task {
 		int player = 1;
 		int moves = 1;
 		double[] gamescores = new double[2];
+		Circuit[] circuits = new Circuit[]{c1, c2};
 		watch:
 		while(game.getWinner() == GameState.CONTINUE) {
 			Circuit current = circuits[player - 1];

@@ -2,10 +2,12 @@ package src;
 
 import src.network.*;
 import src.scenarios.tictactoe.*;
+import src.scenarios.maxOutput.*;
+
 
 public class Main implements Manager{
 
-    public static boolean debug = false;
+    public static boolean debug = true;
 	public static boolean runMultiThreaded = false;
     
     public static void main(String[] args) {
@@ -20,7 +22,7 @@ public class Main implements Manager{
         for(int i = 0; i < layers - 1; i++) {
             layerSize[i] = (int)getDoubleFromUser("Enter layer " + (i + 1) + " size: ");
         } layerSize[layers - 1] = 9; System.out.println("Enter layer " + layers + " size (currently locked): 9");
-        TicTrainer t = new TicTrainer(generationSize, layerSize, mutationRate, mutationChance);
+        outputTrainer t = new outputTrainer(generationSize, layerSize, mutationRate, mutationChance);
         t.sentinelLoop();
 
         int generation = t.getGeneration() - 1;

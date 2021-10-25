@@ -5,23 +5,19 @@ import src.network.*;
 
 public class TicTrainer extends Trainer {
 
+	private Circuit opponent;
+
 	public TicTrainer(int generationSize, int[] layerSize, double mutationRate, double mutationChance) {
 		super(generationSize, 9, layerSize, mutationRate, mutationChance);
+		opponent = getCircuits()[0];
 	}
 
 	protected Task[] createTasks(Circuit[] circuits) {
 		
-		if(circuits.length % 2 != 0) { // Odd
-			System.out.println("Error: Odd number of circuits.");
-			System.exit(1);
-		}
-		TicTask[] tasks = new TicTask[circuits.length / 2];
+		TicTask[] tasks = new TicTask[circuits.length];
 		// Populate & start tasks
 		for(int i = 0; i < tasks.length; i++) {
-			Circuit[] pair = new Circuit[2];
-			pair[0] = circuits[i*2];
-			pair[1] = circuits[i*2 + 1];
-			tasks[i] = new TicTask(pair, this);
+			tasks[i] = new TicTask(circuits[i], this, opponent);
 			// Start thread
 			startCircuitTask(tasks[i], "TicGame " + i);
 		}
@@ -29,15 +25,19 @@ public class TicTrainer extends Trainer {
 	}
 
 	protected double[] populateFitness(Task[] tasks) {
-		double[] fitness = new double[tasks.length * 2];
-		int acc = 0;
-		for(Task t : tasks) {
-			double[] temp = readTask(t);
-			fitness[acc] = temp[0];
-			acc++;
-			fitness[acc] = temp[1];
-			acc++;
+		double[] fitness = new double[tasks.length];
+		double best = -1;
+		int bestIndex = -1;
+		for(int i = 0; i < fitness.length; i++) {
+			fitness[i] = readTask(tasks[i]);
+			if(tasks[i].getFitness() > best) {
+				best = tasks[i].getFitness();
+				bestIndex = i;
+			}
 		}
+
+		opponent = getCircuits()[bestIndex];
+
 		return fitness;
-	}	
+	}
 }
