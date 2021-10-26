@@ -1,133 +1,73 @@
 package src.network;
 
 import java.util.Random;
-import src.*;
+
+import src.network.InvalidCircuitParameter.ERROR;
 
 public class Circuit{
 
     private static Random generator = new Random(1234);
 
-    private String id; // Given when Node is created
-    private int[] layerSizes; // Sizes of each layer{layer 0 size, layer 1 size, ..., layer n size}
-    private double[][][] weights; // Array of doubles that each output is multiplied by. [layers][nodes in layer][nodes in previous layer]
-    private double[][] biases; // The net threshold each node must pass to become active. [layers][nodes in layer]
+    private final String id; // Unique ID
+    public final int layers; // Number of layers
+    public final int[] layerSizes; // Sizes of each layer{layer 0 size, layer 1 size, ..., layer n size}
+    private double[][] weights; // Array of doubles that each output is multiplied by. [layers - 1][nodes in layer * nodes in next layer]
+    private double[][] biases; // The threshold each node's net input must pass to become active. [layers][nodes in layer]
 
     /**
      * This constructor needs manual values, and will not generate it's own.
-     * A circuit consists of one "artificial" layer made up of inputs,
-     * and specified layer sizes that make up normal layers (includes the output nodes).
-     * @param layerSize The size of each layer (Must have at least one value)
+     * @param layerSizes Sizes of each layer{layer 0 size, layer 1 size, ..., layer n size}
+     * @param weights Array of doubles that each output is multiplied by. [layers - 1][nodes in layer * nodes in next layer]
+     * @param biases The threshold each node's net input must pass to become active. [layers][nodes in layer]
+     * @param id Unique ID
      */
-    Circuit(int[] layerSizes, double[][] thresholds, double[][] connectionStrength, String id) {
+    Circuit(int[] layerSizes, double[][] weights, double[][] biases, String id) {
+        this.layers = layerSizes.length;
         this.layerSizes = layerSizes;
-        setupDefaultValues(layerSize);
-
-        this.thresholds = thresholds;
-        this.connectionStrength = connectionStrength;
-
-        createNodes();
+        this.weights = weights;
+        this.biases = biases;
         this.id = id;
     }
 
     /**
      * This constructor will generate it's own values
-     * A circuit consists of one "artificial" layer made up of inputs,
-     * and specified layer sizes that make up normal layers (includes the output nodes).
-     * @param inputs Number of inputs
-     * @param layerSize The size of each layer (Must greater than or equal to 1)
+     * @param layerSizes Sizes of each layer{layer 0 size, layer 1 size, ..., layer n size}
+     * @throws InvalidCircuitParameter
      */
-    Circuit(int inputs, int[] layerSize, String id) {
-        this.inputs = inputs;
-        this.layerSize = layerSize;
-        setupDefaultValues(layerSize);
-        generateValues(layerSize);
-
-        createNodes();
+    Circuit(int[] layerSizes, String id) throws InvalidCircuitParameter {
+        this.layers = layerSizes.length;
+        this.layerSizes = layerSizes;
+        generateValues(layerSizes);
         this.id = id;
     }
 
     /**
-     * For use with any Circuit constructor to initialize inputs and layersize
-     * @param inputs Number of inputs
-     * @param layerSize The size of each layer (Must greater than or equal to 1)
-     */
-    private void setupDefaultValues(int[] layerSize) {
-        layers = new Node[layerSize.length][];
-        for(int i = 0; i < layerSize.length; i++) { // Set each layer to the correct size
-            layers[i] = new Node[layerSize[i]];
-        }
-    }
-
-    /**
      * Make this circuit generate it's own 2D arrays for thresholds and connection strengths
-     * @param inputs Number of inputs
-     * @param layerSize The size of each layer (Must greater than or equal to 1)
+     * @param layerSizes The size of each layer (Must greater than or equal to 1)
+     * @throws InvalidCircuitParameter
      */
-    private void generateValues(int[] layerSize) {
-        generateThresholds(inputs, layerSize);
-        generateConnectionStrengths(inputs, layerSize);
+    private void generateValues(int[] layerSizes) throws InvalidCircuitParameter {
+        generateWeights(layerSizes);
+        generateBiases(layerSizes);
     }
 
-    private void generateThresholds(int inputs, int[] layerSize) {
-        double[][] thresholds = new double[layerSize.length][];
-        for(int x = 0; x < layerSize.length; x++) { // Threshold at position [x,y] will have a random value (double) between 0 and 1 (including 0)
-            thresholds[x] = new double[layerSize[x]];
-
-            for(int y = 0; y < thresholds[x].length; y++) {
-                thresholds[x][y] = Math.random();
+    private void generateWeights(int[] layerSizes) throws InvalidCircuitParameter {
+        if(layerSizes.length < 0) throw new InvalidCircuitParameter(ERROR.CONSTRUCT, "Invalid layer length of 0");
+        this.weights = new double[layers - 1][]; // Input layer has no weights
+        for(int layer = 0; layer < layers - 1; layer++) {
+            weights[layer] = new double[layerSizes[layer] * layerSizes[layer + 1]];
+            for(int weight = 0; weight < weights[layer].length; weight++) {
+                weights[layer][weight] = Math.random() * 2 - 1; // Between 1 and -1
             }
         }
-        this.thresholds = thresholds;
     }
 
-    private void generateConnectionStrengths(int inputs, int[] layerSize) {
-        double[][] connectionStrength = new double[layerSize.length][];
-        for(int i = 0; i < connectionStrength.length; i++) {
-            if (i == 0) { // Connection between input and first layer
-                connectionStrength[i] = new double[inputs * layerSize[i]]; // Total connections = inputs * first layer nodes
-            } else { // Connection between current layer and next layer
-                connectionStrength[i] = new double[layerSize[i - 1] * layerSize[i]]; // Total connections = current layer nodes * next layer nodes
-            }
-        }
-
-        for(int x = 0; x < connectionStrength.length; x++) { // Connection Strength at position [x,y] will have a random value (double) between -1 and 1 (including -1)
-            for(int y = 0; y < connectionStrength[x].length; y++) {
-                connectionStrength[x][y] = Math.random() * 2 - 1;
-            }
-        }
-        this.connectionStrength = connectionStrength;
-    }
-
-    /**
-     * Creates each node in the circuit and connects them.
-     * Should only be called by the constructor.
-     */
-    private void createNodes() {
-        for(int x = layers.length - 1; x >= 0; x--) { // Place on x - axis. Works right to left to not overwrite previously adressed nodes
-            for(int y = 0; y < layers[x].length; y++) { // Place on y - axis
-
-                int nextLayerSize;
-                if(x == layers.length - 1) { // Check if this is the output layer
-                    nextLayerSize = 0; // Output layer has no outputs
-                } else {
-                    nextLayerSize = layers[x + 1].length;
-                }
-
-                Node[] connectedNodes = new Node[nextLayerSize]; // Array for current (x,y) node connections
-                double[] connectedNodeStrengths = new double[nextLayerSize]; // Array for current (x,y) node connection strengths
-                for(int y2 = 0; y2 < nextLayerSize; y2++) { // Place on next y - axis interval (y2)
-                    connectedNodes[y2] = layers[x + 1][y2]; // Place the next layer node in connected node array
-                    connectedNodeStrengths[y2] = connectionStrength[x + 1][y2 + (nextLayerSize * y)]; // Place the connection in connection array at position for this node -> next layer node
-                }
-
-                Node node;
-                if(x == 0) { // First node layer relies on "artificial" input layer
-                    node = new Node(connectedNodes, connectedNodeStrengths, inputs, thresholds[x][y]);
-                } else {
-                    node = new Node(connectedNodes, connectedNodeStrengths, layers[x-1].length, thresholds[x][y]);
-                }
-                
-                layers[x][y] = node;
+    private void generateBiases(int[] layerSizes) throws InvalidCircuitParameter {
+        if(layerSizes.length < 0) throw new InvalidCircuitParameter(ERROR.CONSTRUCT, "Invalid layer length of 0");
+        this.biases = new double[layers][];
+        for(double[] layer : biases) {
+            for(int node = 0; node < layer.length; node++) {
+                layer[node] = 0.0; // Initialize all biases to 0
             }
         }
     }
@@ -136,20 +76,43 @@ public class Circuit{
      * See what the circuit outputs with a selection of input values.
      * @param inputValues Needs to be the same length as inputs.
      * @return Array of doubles
+     * @throws InvalidCircuitParameter
      */
-    public synchronized double[] process(double[] inputValues) {
-        clearCircuit();
-        for(int y = 0; y < inputValues.length; y++) { // Place on "artificial" layer
-            for(int y2 = 0; y2 < layers[0].length; y2++) { // Place on first node layer
-                layers[0][y2].recieveSignal(inputValues[y] * connectionStrength[0][y2 + (layers[0].length * y)]); // Send the signal to each node in first layer
-            }
+    public double[] process(double[] inputValues) throws InvalidCircuitParameter {
+        if(inputValues.length != layerSizes[0]) {
+            throw new InvalidCircuitParameter(ERROR.PROCESS, "Invalid number of inputs [" + inputValues.length + "] with input layer of size [" + layerSizes[0] + "]");
         }
 
-        double[] outputs = new double[layers[layers.length - 1].length]; // Create an int array with length of output layer
-        for(int i = 0; i < outputs.length; i++) {
-            outputs[i] = layers[layers.length - 1][i].getOutputNodeResult(); // Fill array with the average of each output node
+        // Layer 1
+        double[] layer1Out = new double[];
+    }
+
+    private double[] processLayerHelper(double[] inputs, double[] weights, double[] biases) {
+        for()
+    }
+
+    private double processNodeHelper(double[] inputs, double[] weights, double bias) throws InvalidCircuitParameter {
+        if(inputs.length != weights.length) {
+            throw new InvalidCircuitParameter(ERROR.PROCESS, "num inputs [" + inputs.length + "] invalid with num weights [" + weights.length + "]");
         }
-        return outputs;
+
+        double sum = 0;
+        for(int i = 0; i < inputs.length; i++) {
+            sum += inputs[i] * weights[i];
+        }
+        sum -= bias;
+
+        // Sigmoid on sum
+        return sigmoid(sum);
+    }
+
+    public static double sigmoid(double x) {
+        // Quick math bounds
+        if(x > 10) return 1;
+        else if(x < -10) return -1;
+
+        // Actual sigmoid
+        return 1 / (1 + Math.exp(-x));
     }
 
     /**
@@ -227,17 +190,6 @@ public class Circuit{
         gaussian *= scaleFactor;
         gaussian += translation;
         return gaussian;
-    }
-
-    /**
-     * Manually sets each node to unfired so the circuit can process again
-     */
-    private void clearCircuit() {
-        for(int x = 0; x < layers.length; x++) {
-            for(int y = 0; y < layers[x].length; y++) {
-                layers[x][y].setCleared();
-            }
-        }
     }
 
     public void setID(String id) {
